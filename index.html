@@ -1,1 +1,1561 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>Street Furniture Editor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Work+Sans:wght@300;400;600;800&display=swap');
+
+    :root{
+      --leftW: 320px;
+      --rightW: 230px;
+      --edgeGap: 14px;
+      --radius: 22px;
+      --glass: rgba(255,255,255,0.13);
+      --glass-border: rgba(255,255,255,0.22);
+      --accent: #a8edce;
+      --accent2: #ffd6e0;
+      --txt: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; height: 100%;
+      font-family: 'Noto Sans Thai', 'Work Sans', sans-serif;
+      overflow: hidden; background: #000;
+      cursor: url('color-arctic-lime-pointer.png'), auto;
+    }
+    button, .item-card, canvas, input, select, textarea, a {
+      cursor: url('color-arctic-lime-pointer.png'), pointer !important;
+    }
+    body {
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.08)),
+        url('Gemini_Generated_Image_eg5v3ceg5v3ceg5v.png') center/cover no-repeat;
+    }
+
+    /* ── CUSTOM SCROLLBAR — thin vertical pill ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.06); border-radius: 99px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.06); }
+    ::-webkit-scrollbar-thumb { background: rgba(200,200,210,0.45); border-radius: 99px; min-height: 40px; transition: background .25s; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(220,220,230,0.75); }
+    ::-webkit-scrollbar-thumb:active { background: rgba(255,255,255,0.85); }
+
+    /* ── START SCREEN ── */
+    #startScreen {
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: url('Gemini_Generated_Image_xy1tbfxy1tbfxy1t.png') center/cover no-repeat;
+      transition: opacity 0.9s ease, visibility 0.9s ease;
+    }
+    #startScreen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+    #startScreen::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(160deg,rgba(0,0,0,.50) 0%,rgba(0,20,40,.60) 100%);
+    }
+    .start-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:24px; text-align:center; padding: 0 24px; }
+    .start-logo { width:160px; filter:drop-shadow(0 4px 24px rgba(0,0,0,.6)); animation: floatLogo 3.2s ease-in-out infinite; }
+    @keyframes floatLogo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+    .start-title { font-size:30px; font-weight:800; color:#fff; line-height:1.3; text-shadow:0 2px 24px rgba(0,0,0,.5); }
+    .start-sub { font-size:15px; color:rgba(255,255,255,.78); font-weight:400; }
+    #btn_start {
+      padding:15px 52px; border:none; border-radius:999px;
+      background:linear-gradient(135deg,#a8edce 0%,#72d4f5 100%);
+      color:#1a3a2e; font-size:17px; font-weight:800;
+      font-family:'Noto Sans Thai',sans-serif;
+      box-shadow:0 6px 36px rgba(100,220,180,.45),0 2px 8px rgba(0,0,0,.2);
+      transition:transform .18s, box-shadow .18s; letter-spacing:.3px;
+    }
+    #btn_start:hover { transform:scale(1.07) translateY(-2px); box-shadow:0 14px 44px rgba(100,220,180,.55); }
+    #btn_start:active { transform:scale(0.97); }
+    .start-hint { font-size:12.5px; color:rgba(255,255,255,.48); }
+
+    /* ── LAYOUT ── */
+    #container { width:100vw; height:100vh; }
+    canvas { display:block; }
+    .pad-left  { padding-left:  calc(var(--leftW)  + var(--edgeGap)*2 + 4px); }
+    .pad-right { padding-right: calc(var(--rightW) + var(--edgeGap)*2 + 4px); }
+
+    /* ── SIDEBAR BASE ── */
+    .sidebar {
+      position:fixed; top:var(--edgeGap); bottom:var(--edgeGap);
+      padding:14px 12px; display:flex; flex-direction:column; gap:8px;
+      overflow-y:auto; overflow-x:hidden; z-index:9500; color:#fff;
+      background:var(--glass); border:1px solid var(--glass-border);
+      backdrop-filter:blur(16px) saturate(170%);
+      -webkit-backdrop-filter:blur(16px) saturate(170%);
+      border-radius:var(--radius);
+      box-shadow:0 8px 36px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
+    }
+    #leftbar  { left:var(--edgeGap);  width:var(--leftW); }
+    #rightbar { right:var(--edgeGap); width:var(--rightW); }
+    #rightbar .panel:first-of-type { margin-top:0; }
+
+    .brand-inside { width: 100%; display: block; margin-bottom: 4px; filter: drop-shadow(0 2px 8px rgba(0,0,0,.45)); pointer-events: none; max-height: 68px; object-fit: contain; }
+
+    /* ── HUD ── */
+    .hud { position:fixed; left:30%; transform:translateX(-30%); bottom:calc(var(--edgeGap) + 6px); display:flex; gap:10px; z-index:9600; max-width:min(92vw,1200px); flex-wrap:wrap; justify-content:center; }
+
+    /* ── GROUP TITLE ── */
+    .group { display:flex; flex-direction:column; gap:4px; }
+    .group-title { font-weight:700; font-size:12.5px; color:#fff; margin-top:10px; margin-bottom:3px; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,.09); border-left:3px solid var(--accent); line-height:1.3; }
+
+    /* ── ITEM GRID ── */
+    .item-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+    .item-card { display:flex; flex-direction:column; align-items:center; gap:4px; padding:7px 4px 6px; border-radius:15px; font-size:10.5px; background:rgba(255,255,255,.09); color:#fff; border:1.5px solid rgba(255,255,255,.16); transition:all .15s ease; text-align:center; position:relative; overflow:hidden; }
+    .item-card:hover { background:rgba(255,255,255,.19); border-color:rgba(255,255,255,.35); transform:translateY(-2px); box-shadow:0 5px 18px rgba(0,0,0,.18); }
+    .item-card.active { background:linear-gradient(135deg,rgba(168,237,206,.32),rgba(114,212,245,.26)) !important; border-color:var(--accent) !important; box-shadow:0 0 0 2px rgba(168,237,206,.35),0 5px 18px rgba(0,0,0,.18); }
+    .item-card .thumb { width:52px; height:52px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,.05); }
+    .item-card .thumb-placeholder { width:52px; height:52px; border-radius:10px; background:rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .item-card .card-label { font-size:10px; line-height:1.25; word-break:break-word; opacity:.9; }
+    .item-card .card-count { position:absolute; top:4px; right:5px; font-size:9.5px; font-weight:700; background:rgba(168,237,206,.88); color:#1a3a2e; border-radius:99px; padding:1px 5px; display:none; }
+    .item-card .card-count.show { display:block; }
+    .card-spinner { display:none; width:20px; height:20px; border:2.5px solid rgba(255,255,255,.18); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+    @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+    .item-card.loading .thumb, .item-card.loading .thumb-placeholder { opacity:.25; }
+    .item-card.loading .card-spinner { display:block; }
+    .item-card.load-error { border-color:rgba(255,100,100,.45) !important; }
+    .item-card.load-error .card-err { display:block !important; }
+    .card-err { display:none; position:absolute; bottom:3px; left:0; right:0; text-align:center; font-size:9px; color:#ff8888; }
+
+    /* ── CONTROLS ── */
+    .panel { display:flex; flex-direction:column; gap:7px; }
+    .ctrl { padding:9px 12px; border:none; border-radius:14px; color:#fff; font-size:12.5px; font-family:'Noto Sans Thai','Work Sans',sans-serif; background:rgba(255,255,255,.11); text-align:left; border:1px solid rgba(255,255,255,.18); transition:all .14s ease; text-decoration:none; display:block; font-weight:500; }
+    .ctrl:hover { background:rgba(255,255,255,.20); transform:translateY(-1px); box-shadow:0 3px 12px rgba(0,0,0,.14); }
+    .ctrl:active { transform:translateY(0); }
+    .ctrl.delete-btn { background:rgba(255,80,80,.17); border-color:rgba(255,100,100,.32); color:#ffc8c8; }
+    .ctrl.delete-btn:hover { background:rgba(255,80,80,.30); color:#fff; }
+    .ctrl.accent-btn { background:linear-gradient(135deg,rgba(168,237,206,.22),rgba(114,212,245,.18)); border-color:rgba(168,237,206,.38); color:var(--accent); font-weight:700; }
+    .ctrl.accent-btn:hover { background:linear-gradient(135deg,rgba(168,237,206,.34),rgba(114,212,245,.26)); }
+    .ctrl.music-on { background:rgba(168,237,206,.20); border-color:rgba(168,237,206,.50); color:#a8edce; font-weight:700; }
+
+    /* ── STATUS ── */
+    .status { margin-top:2px; padding:9px 12px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); color:#f0f0f0; font-size:12px; line-height:1.6; }
+
+    /* ── PROP PANEL ── */
+    .prop-panel { display:none; flex-direction:column; gap:7px; background:rgba(0,0,0,.16); padding:9px; border-radius:13px; border:1px solid rgba(255,255,255,.09); }
+    .prop-row { display:flex; align-items:center; justify-content:space-between; font-size:12px; gap:8px; }
+
+    /* ── SECTION HEADER ── */
+    .section-hdr { font-size:10.5px; font-weight:700; letter-spacing:.7px; text-transform:uppercase; color:var(--accent); opacity:.8; padding:0 2px; margin-top:2px; }
+
+    /* ── RANGE ── */
+    input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:99px; background:rgba(255,255,255,.16); outline:none; margin:5px 0; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:17px; height:17px; border-radius:50%; background:linear-gradient(135deg,#a8edce,#72d4f5); box-shadow:0 2px 8px rgba(0,0,0,.28); border:2px solid rgba(255,255,255,.45); cursor:pointer; transition:transform .14s; }
+    input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.22); }
+    input[type="range"]::-moz-range-thumb { width:17px; height:17px; border-radius:50%; background:linear-gradient(135deg,#a8edce,#72d4f5); box-shadow:0 2px 8px rgba(0,0,0,.28); border:2px solid rgba(255,255,255,.45); cursor:pointer; }
+
+    /* ── INPUTS ── */
+    input[type="color"] { border:none; width:38px; height:24px; background:none; padding:0; border-radius:8px; }
+    select, input[type="number"] { border-radius:10px; border:1px solid rgba(255,255,255,.20); background:rgba(0,0,0,.20); color:#fff; padding:5px 7px; outline:none; font-family:'Noto Sans Thai','Work Sans',sans-serif; font-size:11.5px; }
+    .extra-input-label { font-size:11.5px; font-weight:600; color:#fff; opacity:.82; margin-bottom:3px; }
+    .extra-input { width:100%; min-height:60px; resize:vertical; border-radius:13px; border:1px solid rgba(255,255,255,.20); background:rgba(0,0,0,.16); color:#fff; padding:8px 11px; outline:none; box-sizing:border-box; font-family:'Noto Sans Thai','Work Sans',sans-serif; font-size:12px; line-height:1.4; }
+    .extra-input:focus { border-color:rgba(168,237,206,.45); background:rgba(0,0,0,.24); }
+    .extra-input::placeholder { color:rgba(255,255,255,.36); }
+    .link-note { font-size:10.5px; opacity:.60; line-height:1.45; }
+
+    /* ── DIVIDER ── */
+    .divider { height:1px; background:rgba(255,255,255,.09); border-radius:99px; margin:1px 0; }
+    .rot-row { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+    .grid-row { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+
+    /* ── CAM PILL ── */
+    .bottom-hud { position:fixed; left:50%; transform:translateX(-50%); bottom:var(--edgeGap); z-index:9700; pointer-events:none; }
+    .cam-pill { display:inline-flex; align-items:center; gap:7px; padding:7px 15px; border-radius:999px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.17); backdrop-filter:blur(8px); color:#fff; font-weight:700; font-size:12.5px; box-shadow:0 4px 20px rgba(0,0,0,.22); }
+
+    /* ── CLOUDS ── */
+    body::after { content:''; position:fixed; left:0; right:0; bottom:0; height:180px; background:url("images/clouds.png") center bottom/cover no-repeat; z-index:9000; pointer-events:none; }
+  </style>
+</head>
+<body>
+
+  <div id="startScreen">
+    <div class="start-content">
+      <img class="start-logo" src="images/logo.png" alt="LocalLoop BKK" onerror="this.style.display='none'">
+      <div class="start-title">🌿 ออกแบบสวนสาธารณะ<br>ในฝันของคุณ</div>
+      <div class="start-sub">วางเฟอร์นิเจอร์ เพิ่มต้นไม้ สร้างสรรค์พื้นที่สีเขียว</div>
+      <button id="btn_start">✨ เริ่มต้น</button>
+      <div class="start-hint">ดับเบิลคลิกบนพื้นที่เพื่อวางวัตถุ</div>
+    </div>
+  </div>
+
+  <audio id="bgMusic" loop>
+    <source src="https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/models/music.mp3" type="audio/mpeg">
+  </audio>
+  <div class="hud" id="hud"></div>
+
+  <aside id="leftbar" class="sidebar">
+    <div class="group" id="menu"></div>
+  </aside>
+
+  <aside id="rightbar" class="sidebar">
+    <img class="brand-inside" src="images/logo.png" alt="LocalLoop BKK" onerror="this.style.display='none'">
+    <div class="divider" style="margin-bottom:2px"></div>
+
+    <div class="panel">
+      <button class="ctrl" id="btn_music">🔇 เสียง: ปิด</button>
+      <button class="ctrl" id="btn_snap">📷 บันทึกภาพหน้าจอ</button>
+      <div>
+        <div class="extra-input-label">ข้อเสนอแนะเพิ่มเติม</div>
+        <textarea id="additionalInfo" class="extra-input" placeholder="พิมพ์ความคิดเห็นของคุณ..."></textarea>
+      </div>
+      <button class="ctrl accent-btn" id="btn_submit">✔ ส่งข้อมูล</button>
+      <a class="ctrl" href="gallery.html">🖼 ดูผลงานทั้งหมด</a>
+      
+      <button class="ctrl" id="btn_undo">⟲ เลิกทำ</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="panel" id="propPanelWrapper" style="display:none">
+      <div class="status" style="margin-top:0;padding:8px 11px;">
+        <b>✨ เลือก: <span id="selNameDisp" style="color:var(--accent)"></span></b>
+      </div>
+      <button class="ctrl delete-btn" id="btn_delete_sel">🗑 ลบวัตถุ</button>
+      <div class="prop-panel" style="display:flex;margin-top:3px">
+        <div class="prop-row"><span>🎨 สี</span><input type="color" id="objColor" value="#ffffff"></div>
+        <div class="prop-row" style="margin-top:5px"><span>📏 ขนาด</span><input type="number" id="objScale" step="0.1" value="1.0" style="width:64px"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="panel">
+      <div class="section-hdr">⟳ การหมุน</div>
+      <div class="rot-row">
+        <button class="ctrl" id="btn_rot_holdL" style="text-align:center;padding:8px 4px;font-size:17px">⟲</button>
+        <button class="ctrl" id="btn_rot_holdR" style="text-align:center;padding:8px 4px;font-size:17px">⟳</button>
+      </div>
+      <input id="rotSlider" type="range" min="0" max="360" value="0" step="1"/>
+      <div class="status" style="margin-top:1px;padding:7px 11px;font-size:11.5px">
+        <label style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <span>แกน:</span>
+          <select id="rotAxis" style="flex:1">
+            <option value="z">หันซ้าย-ขวา (Z)</option>
+            <option value="y">เงย-ก้ม (Y)</option>
+            <option value="x">เอียง (X)</option>
+          </select>
+        </label>
+        <div><b>มุม (<span id="axisLabel">Z</span>):</b> <span id="rotDeg" style="color:var(--accent)">0°</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="panel">
+      <div class="section-hdr">⊞ ตาราง</div>
+      <div class="grid-row">
+        <button class="ctrl" id="btn_grid_minus" style="text-align:center">➖</button>
+        <button class="ctrl" id="btn_grid_plus"  style="text-align:center">➕</button>
+      </div>
+      <button class="ctrl" id="btn_grid_random" style="font-size:11.5px">🎲 สุ่มตาราง: ปิด</button>
+    </div>
+
+    <div class="status" id="statusBox">
+      <div>📦 <b>วางทั้งหมด:</b> <span id="totalPlaced" style="color:var(--accent);font-weight:700">0</span></div>
+      <div>⊞ <b>ขนาดตาราง:</b> <span id="gridSizeLabel">20</span> ช่อง</div>
+    </div>
+  </aside>
+
+  <div id="container" class="pad-left pad-right"></div>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.119.1/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.119.1/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader }    from 'https://unpkg.com/three@0.119.1/examples/jsm/loaders/GLTFLoader.js';
+    import { DRACOLoader }   from 'https://unpkg.com/three@0.119.1/examples/jsm/loaders/DRACOLoader.js';
+
+    /* ─ CONFIG ─ */
+    /* Sheet 1 — นับจำนวนโมเดลที่เลือก (11TNv7...) */
+    const COUNTS_GAS_ID   = 'AKfycbwjlpuyDMYdXLzPjvsbH3CCOm25nylo-HvLXhtIgpbd_nUKZzbiQI-DDhkbK2_fHQE_';
+    const COUNTS_SHEET_URL = 'https://script.google.com/macros/s/' + COUNTS_GAS_ID + '/exec';
+
+    /* Sheet 2 — รวบรวมข้อเสนอแนะเพิ่มเติม (1MJIwES...) */
+    const FEEDBACK_GAS_ID   = 'AKfycbziBkzfVnQhdSM7sUtOrF_QZvU7CiI3VZ3a6C8pfBWeBbZc17BSeXMp5SyLHk2h7F5l';
+    const FEEDBACK_SHEET_URL = 'https://script.google.com/macros/s/' + FEEDBACK_GAS_ID + '/exec';
+    const SUPABASE_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkaHdia2NteGdpc3Fuem5yeWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0MjkyMzAsImV4cCI6MjA4NDAwNTIzMH0.GUppQsGOW7ypR-skf8waGSX6ouxDUnnxkY5Ep-Tn1rQ';
+    const SUPABASE_URL    = 'https://edhwbkcmxgisqnznryhp.supabase.co';
+    const SUPABASE_BUCKET = 'submissions';
+    const MAP_IMAGE_URL   = 'https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/models/Models/Seasttle-02.jpg';
+    const MODEL_BASE_URL  = SUPABASE_URL + '/storage/v1/object/public/Model_Pravet/';
+    const ICON_BASE_URL   = SUPABASE_URL + '/storage/v1/object/public/Model_Pravet/Icon/';
+
+    const GOOGLE_SHEET_LINK     = 'https://docs.google.com/spreadsheets/d/1MJIwESAxuGGwXjEZr7q7Xu9x7159SAYbDePapHdmoSs/edit?usp=sharing';
+    const CAMERA_YAW_SHEET_LINK = 'https://docs.google.com/spreadsheets/d/11TNv7OQtxeFjaMX_sUuSWH6R8Sb35GIDqsIUJs2UrVQ/edit?usp=sharing';
+
+    /* ─ START SCREEN ─ */
+    const startScreen = document.getElementById('startScreen');
+    document.getElementById('btn_start').addEventListener('click', () => {
+      startScreen.classList.add('hidden');
+      bgMusic.play().then(() => {
+        btnMusic.textContent = '🎵 เสียง: เปิด';
+        btnMusic.classList.add('music-on');
+        isMusicPlaying = true;
+      }).catch(() => {});
+    });
+
+    /* ─ MUSIC ─ */
+    const bgMusic  = document.getElementById('bgMusic');
+    const btnMusic = document.getElementById('btn_music');
+    let isMusicPlaying = false;
+    bgMusic.volume = 0.4;
+    btnMusic.addEventListener('click', () => {
+      if (isMusicPlaying) {
+        bgMusic.pause(); btnMusic.textContent = '🔇 เสียง: ปิด'; btnMusic.classList.remove('music-on');
+      } else {
+        bgMusic.play().then(() => { btnMusic.textContent = '🎵 เสียง: เปิด'; btnMusic.classList.add('music-on'); }).catch(e => console.warn(e));
+      }
+      isMusicPlaying = !isMusicPlaying;
+    });
+
+    /* ─ BG IMAGE ─ */
+    const bgImg = new Image();
+    bgImg.crossOrigin = 'anonymous';
+    bgImg.src = 'Gemini_Generated_Image_eg5v3ceg5v3ceg5v.png';
+
+    /* ─ THREE SETUP ─ */
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 10, 10000000);
+    camera.position.set(5000, -5000, 4000); camera.up.set(0, 0, 1);
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isMobile,
+      alpha: true,
+      logarithmicDepthBuffer: !isMobile,
+      powerPreference: 'high-performance',
+    });
+    renderer.setSize(innerWidth, innerHeight);
+    
+    /* ปรับลด Pixel Ratio ให้ลื่นขึ้น */
+    renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.0 : 1.5));
+    
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    document.getElementById('container').appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping=true; controls.dampingFactor=0.08; controls.screenSpacePanning=false;
+    controls.minDistance=500; controls.maxDistance=500000; controls.maxPolarAngle=Math.PI/1.8;
+    controls.enableZoom = false; 
+
+    const _groundPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const _zoomRaycaster = new THREE.Raycaster();
+
+    renderer.domElement.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = renderer.domElement.getBoundingClientRect();
+      const mouseNDC = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+      _zoomRaycaster.setFromCamera(mouseNDC, camera);
+      const mouseWorld = new THREE.Vector3();
+      const hit = _zoomRaycaster.ray.intersectPlane(_groundPlane, mouseWorld);
+      const pivotPoint = hit ? mouseWorld : controls.target.clone();
+      const delta = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
+      const zoomFactor = Math.pow(1.001, delta); 
+      const camToPivot   = new THREE.Vector3().subVectors(camera.position,  pivotPoint);
+      const targToPivot  = new THREE.Vector3().subVectors(controls.target,  pivotPoint);
+      const newCamPos    = new THREE.Vector3().addVectors(pivotPoint, camToPivot.multiplyScalar(zoomFactor));
+      const newTarget    = new THREE.Vector3().addVectors(pivotPoint, targToPivot.multiplyScalar(zoomFactor));
+      const newDist = newCamPos.distanceTo(newTarget);
+      if (newDist >= controls.minDistance && newDist <= controls.maxDistance) {
+        camera.position.copy(newCamPos);
+        controls.target.copy(newTarget);
+      }
+      controls.update();
+    }, { passive: false });
+
+    // แก้ไข Resize ให้ใช้ Pixel Ratio ใหม่เพื่อความลื่น
+    window.addEventListener('resize',()=>{
+      renderer.setSize(innerWidth,innerHeight);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.0 : 1.5));
+      camera.aspect=innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    function getMouseNDC(e) {
+      const r = renderer.domElement.getBoundingClientRect();
+      return new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    }
+    function dataURLtoBlob(dataurl) {
+      const arr=dataurl.split(','), mime=arr[0].match(/:(.*?);/)[1], bstr=atob(arr[1]);
+      let n=bstr.length; const u8=new Uint8Array(n);
+      while(n--) u8[n]=bstr.charCodeAt(n);
+      return new Blob([u8],{type:mime});
+    }
+    function capturePNG() {
+      renderer.render(scene, camera);
+      const canvas=document.createElement('canvas');
+      canvas.width=renderer.domElement.width; canvas.height=renderer.domElement.height;
+      const ctx=canvas.getContext('2d');
+      if(bgImg.complete&&bgImg.naturalWidth>0){
+        const w=canvas.width,h=canvas.height,r=Math.max(w/bgImg.naturalWidth,h/bgImg.naturalHeight);
+        const nw=bgImg.naturalWidth*r,nh=bgImg.naturalHeight*r;
+        ctx.drawImage(bgImg,(w-nw)/2,(h-nh)/2,nw,nh);
+      }
+      const g=ctx.createLinearGradient(0,0,0,canvas.height);
+      g.addColorStop(0,'rgba(0,0,0,0.3)'); g.addColorStop(1,'rgba(0,0,0,0.1)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(renderer.domElement,0,0);
+      return canvas.toDataURL('image/png');
+    }
+
+    /* ─ STARS ─ (ลดจำนวนอนุภาคลงให้ลื่นขึ้น) */
+    const stars = (() => {
+      const g=new THREE.BufferGeometry(), COUNT=isMobile?200:800, spread=50000;
+      const p=new Float32Array(COUNT*3);
+      for(let i=0;i<COUNT;i++){p[i*3]=(Math.random()*2-1)*spread;p[i*3+1]=(Math.random()*2-1)*spread;p[i*3+2]=(Math.random()*2-1)*spread;}
+      g.setAttribute('position',new THREE.BufferAttribute(p,3));
+      const pts=new THREE.Points(g,new THREE.PointsMaterial({size:10,sizeAttenuation:true,color:0xffffff,transparent:true,opacity:.6}));
+      scene.add(pts);
+      return { update(){pts.rotation.z+=0.0001;} };
+    })();
+
+    /* ─ GRID ─ */
+    const UNIT_PER_M=1000;
+    let gridSize=20, boxSize=UNIT_PER_M;
+    let grid=new THREE.GridHelper(gridSize*boxSize,gridSize,0x444444,0x333333);
+    grid.rotation.x=Math.PI/2; scene.add(grid);
+    const ground=new THREE.Mesh(
+      new THREE.PlaneBufferGeometry(gridSize*boxSize*10,gridSize*boxSize*10),
+      new THREE.MeshBasicMaterial({visible:false})
+    );
+    scene.add(ground);
+    function refreshGridLabels(){document.getElementById('gridSizeLabel').textContent=gridSize;}
+    function rebuildGrid(){
+      scene.remove(grid);
+      grid=new THREE.GridHelper(gridSize*boxSize,gridSize,0x444444,0x333333);
+      grid.rotation.x=Math.PI/2; scene.add(grid);
+      ground.geometry=new THREE.PlaneBufferGeometry(gridSize*boxSize*10,gridSize*boxSize*10);
+      refreshGridLabels();
+    }
+    document.getElementById('btn_grid_plus').addEventListener('click',()=>{gridSize+=10;rebuildGrid();});
+    document.getElementById('btn_grid_minus').addEventListener('click',()=>{if(gridSize>10){gridSize-=10;rebuildGrid();}});
+
+    /* ─ LIGHTS ─ */
+    scene.add(new THREE.HemisphereLight(0xffffff,0x888888,1.5));
+    const dir=new THREE.DirectionalLight(0xffffff,1.2); dir.position.set(5000,5000,5000); scene.add(dir);
+
+    /* ─ LOADER ─ */
+    const dracoLoader=new DRACOLoader();
+    dracoLoader.setDecoderPath('https://unpkg.com/three@0.119.1/examples/js/libs/draco/gltf/');
+    const loader=new GLTFLoader(); loader.setDRACOLoader(dracoLoader);
+
+    /* ─ MAP IMAGE ─ */
+    // ใช้ภาพแผนที่แทน Pravet GLB ทั้งหมด
+    // อัตราส่วนภาพต้นฉบับ: 3300 x 2550
+    const MAP_WIDTH_M = 450;
+    const MAP_ASPECT = 3300 / 2550;
+    const MAP_WIDTH = MAP_WIDTH_M * UNIT_PER_M;
+    const MAP_HEIGHT = MAP_WIDTH / MAP_ASPECT;
+
+    // ปรับกริดและพื้นสำหรับการวางวัตถุให้ครอบคลุมภาพแผนที่
+    gridSize = Math.ceil(Math.max(MAP_WIDTH, MAP_HEIGHT) / boxSize / 2) * 2;
+    rebuildGrid();
+
+    // วางกล้องให้เห็นพื้นที่แผนที่ตั้งแต่เริ่มต้น
+    camera.position.set(0, -MAP_HEIGHT * 0.72, MAP_WIDTH * 0.72);
+    controls.target.set(0, 0, 0);
+    controls.maxDistance = Math.max(500000, MAP_WIDTH * 2.5);
+    controls.update();
+
+    const mapTextureLoader = new THREE.TextureLoader();
+    mapTextureLoader.setCrossOrigin('anonymous');
+    mapTextureLoader.load(
+      MAP_IMAGE_URL,
+      texture => {
+        texture.encoding = THREE.sRGBEncoding;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.needsUpdate = true;
+
+        const mapGeometry = new THREE.PlaneBufferGeometry(MAP_WIDTH, MAP_HEIGHT);
+        const mapMaterial = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+          transparent: false,
+          depthWrite: true
+        });
+        const mapMesh = new THREE.Mesh(mapGeometry, mapMaterial);
+        mapMesh.position.set(0, 0, -10); // ต่ำกว่าวัตถุและ ground เล็กน้อย ป้องกัน z-fighting
+        mapMesh.name = 'SeattleMapImage';
+        scene.add(mapMesh);
+      },
+      undefined,
+      err => console.error('Map image failed to load:', MAP_IMAGE_URL, err)
+    );
+
+    /* ─ DATA ─ */
+    /* GROUP_EMOJI: emoji fallback เมื่อ icon ไม่พบ */
+    const GROUP_EMOJI = {
+      '01':'🪑','02':'🍽️','03':'🏋️','04':'🎠','05':'📷','06':'💧','07':'💡','08':'⛱️',
+      '09':'🔒','10':'❤️','11':'🗑️','12':'🔊','13':'🚏','14':'🌳','15':'🚨','16':'🚲',
+      '17':'🚻','18':'🧪'
+    };
+
+    /* ITEM_ICON: icon แยกรายตัวทุก item 01–21
+       path รูปคือ /icon/{GroupName}{n}.png  (n = ลำดับใน group เริ่มจาก 1)
+       ถ้าไฟล์ไม่พบจะ fallback เป็น emoji อัตโนมัติ                          */
+    const ITEM_ICON = {
+      /* 01 เก้าอี้ */
+      '01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย':                          '/icon/Park Bench1.png',
+      '01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม':                  '/icon/Park Bench2.png',
+      '01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน':                      '/icon/Park Bench3.png',
+      '01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้':                               '/icon/Park Bench4.png',
+      '01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม':                       '/icon/Park Bench5.png',
+      /* 02 โต๊ะ */
+      '02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง':                                '/icon/Table1.png',
+      '02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง':                         '/icon/Table2.png',
+      '02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน':                                  '/icon/Table3.png',
+      '02 โต๊ะ::โต๊ะทำงานกลางแจ้ง':                                      '/icon/Table4.png',
+      /* 03 เครื่องออกกำลังกาย */
+      '03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์':               '/icon/Exercise1.png',
+      '03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว':           '/icon/Exercise2.png',
+      '03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง':               '/icon/Exercise3.png',
+      '03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ':               '/icon/Exercise4.png',
+      '03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง':             '/icon/Exercise5.png',
+      /* 04 เครื่องเล่นเด็ก */
+      '04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน':                       '/icon/Playground1.png',
+      '04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน':                    '/icon/Playground2.png',
+      '04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย':                            '/icon/Playground3.png',
+      '04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย':                     '/icon/Playground4.png',
+      '04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ':     '/icon/Playground5.png',
+      /* 05 กล้องวงจรปิด */
+      '05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน':                            '/icon/CCTV1.png',
+      '05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์':                   '/icon/CCTV2.png',
+      '05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา':                   '/icon/CCTV3.png',
+      '05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง':                  '/icon/CCTV4.png',
+      /* 06 ตู้กดน้ำสาธารณะ */
+      '06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด':                      '/icon/Water Fountain1.png',
+      '06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น':                    '/icon/Water Fountain2.png',
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น':              '/icon/Water Fountain3.png',
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง':                     '/icon/Water Fountain4.png',
+      /* 07 ไฟส่องสว่าง */
+      '07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป':                              '/icon/Street Light1.png',
+      '07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา':                           '/icon/Street Light2.png',
+      '07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้':                  '/icon/Street Light3.png',
+      '07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ':                               '/icon/Street Light4.png',
+      /* 08 ที่หลบฝน/หลังคา */
+      '08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง':                '/icon/Shelter1.png',
+      '08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย':                    '/icon/Shelter2.png',
+      '08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม':                    '/icon/Shelter3.png',
+      '08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ':                            '/icon/Shelter4.png',
+      /* 09 ตู้ล็อคเกอร์สาธารณะ */
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา':            '/icon/Locker1.png',
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง':             '/icon/Locker2.png',
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้':              '/icon/Locker3.png',
+      /* 10 เครื่องกระตุกหัวใจ AED */
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน':              '/icon/AED1.png',
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา':                  '/icon/AED2.png',
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล':           '/icon/AED3.png',
+      /* 11 จุดทิ้งขยะ */
+      '11 จุดทิ้งขยะ::ถังขยะแยกประเภท':                                  '/icon/Bin1.png',
+      '11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย':                       '/icon/Bin2.png',
+      '11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง':                            '/icon/Bin3.png',
+      /* 12 ลำโพงกระจายเสียง */
+      '12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน':                   '/icon/Speaker1.png',
+      '12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม':                 '/icon/Speaker2.png',
+      '12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน':               '/icon/Speaker3.png',
+      '12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน':                 '/icon/Speaker4.png',
+      /* 13 ป้ายและระบบ Wayfinding */
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม':         '/icon/Sign1.png',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม':    '/icon/Sign2.png',
+      '13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง':          '/icon/Sign3.png',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม': '/icon/Sign4.png',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ':'/icon/Sign5.png',
+      /* 14 ร่มเงา–ต้นไม้ */
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง':       '/icon/Tree1.png',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย':                '/icon/Tree2.png',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา':     '/icon/Tree3.png',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา':             '/icon/Tree4.png',
+      /* 15 ความปลอดภัย */
+      '15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ':'/icon/Safety1.png',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน':           '/icon/Safety2.png',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ':'/icon/Safety3.png',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ':'/icon/Safety4.png',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ':'/icon/Safety5.png',
+      /* 16 จักรยาน */
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack':   '/icon/Bicycle1.png',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ':'/icon/Bicycle2.png',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม': '/icon/Bicycle3.png',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว':        '/icon/Bicycle4.png',
+      /* 17 ห้องน้ำสาธารณะ */
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง':             '/icon/Toilet1.png',
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง':         '/icon/Toilet2.png',
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ':               '/icon/Toilet3.png',
+      '17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก':                   '/icon/Toilet4.png',
+      /* 18 คน */
+      '18 คน::คน 01': '/icon/Experiment1.png',
+      '18 คน::คน 02': '/icon/Experiment2.png',
+      '18 คน::คน 03': '/icon/Experiment3.png',
+      '18 คน::คน 04': '/icon/Experiment4.png',
+      '18 คน::คน 05': '/icon/Experiment5.png',
+    };
+
+    const GROUPS = {
+      '01 เก้าอี้':['01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย','01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม','01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน','01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้','01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม'],
+      '02 โต๊ะ':['02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง','02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง','02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน','02 โต๊ะ::โต๊ะทำงานกลางแจ้ง'],
+      '03 เครื่องออกกำลังกาย':['03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์','03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว','03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง','03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ','03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง'],
+      '04 เครื่องเล่นเด็ก':['04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน','04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน','04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย','04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย','04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ'],
+      '05 กล้องวงจรปิด':['05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน','05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์','05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา','05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง'],
+      '06 ตู้กดน้ำสาธารณะ':['06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด','06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น','06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น','06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง'],
+      '07 ไฟส่องสว่าง':['07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป','07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา','07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้','07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ'],
+      '08 ที่หลบฝน/หลังคา':['08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง','08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย','08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม','08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ'],
+      '09 ตู้ล็อคเกอร์สาธารณะ':['09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา','09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง','09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้'],
+      '10 เครื่องกระตุกหัวใจ AED':['10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน','10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา','10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล'],
+      '11 จุดทิ้งขยะ':['11 จุดทิ้งขยะ::ถังขยะแยกประเภท','11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย','11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง'],
+      '12 ลำโพงกระจายเสียง':['12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน','12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม','12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน','12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน'],
+      '13 ป้ายและระบบ Wayfinding / Signage':['13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม','13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม','13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง','13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม','13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ'],
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน':['14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง','14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย','14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา','14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา'],
+      '15 ความปลอดภัยและขอความช่วยเหลือ':['15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ','15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน','15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ','15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ','15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ'],
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้':['16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack','16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ','16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม','16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว'],
+      '17 ห้องน้ำสาธารณะ':['17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง','17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง','17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ','17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก'],
+      '18 คน':['18 คน::คน 01','18 คน::คน 02','18 คน::คน 03','18 คน::คน 04','18 คน::คน 05'],
+    };
+
+    /*
+     * ITEM_SCALE_M — ขนาดจริงแต่ละชิ้น (มาตรฐานสากล) หน่วย: เมตร
+     *   long = สเกลตาม footprint ที่ยาวที่สุด (กว้าง/ลึก)
+     *   tall = สเกลตามความสูง (size.z หลัง rotate x 90°)
+     */
+    const ITEM_SCALE_M = {
+      /* 01 เก้าอี้ */
+      '01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย':                        {long:1.44},
+      '01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม':                {long:1.60},
+      '01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน':                    {long:0.50},
+      '01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้':                             {long:5.76},
+      '01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม':                     {long:1.064},
+      /* 02 โต๊ะ */
+      '02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง':                              {long:1.80},
+      '02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง':                       {long:0.42},
+      '02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน':                                {long:0.90},
+      '02 โต๊ะ::โต๊ะทำงานกลางแจ้ง':                                    {long:1.40},
+      /* 03 เครื่องออกกำลังกาย */
+      '03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์':             {long:1.50},
+      '03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว':         {long:1.20},
+      '03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง':             {long:0.75},
+      '03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ':             {long:0.75},
+      '03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง':           {long:1.50},
+      /* 04 เครื่องเล่นเด็ก */
+      '04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน':                    {long:1.50},
+      '04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน':                  {long:2.50},
+      '04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย':                          {long:1.75},
+      '04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย':                   {long:1.50},
+      '04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ':   {long:2.50},
+      /* 05 กล้องวงจรปิด */
+      '05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน':                          {tall:1.75},
+      '05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์':                 {tall:1.75},
+      '05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา':                 {tall:1.75},
+      '05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง':                {tall:1.75},
+      /* 06 ตู้กดน้ำสาธารณะ */
+      '06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด':                    {tall:1.20},
+      '06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น':                  {tall:0.90},
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น':            {tall:1.00},
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง':                   {tall:0.40},
+      /* 07 ไฟส่องสว่าง */
+      '07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป':                            {tall:4.00},
+      '07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา':                         {tall:6.00},
+      '07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้':                {tall:1.25},
+      '07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ':                             {tall:5.00},
+      /* 08 ที่หลบฝน/หลังคา */
+      '08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง':              {long:5.00},
+      '08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย':                  {long:5.00},
+      '08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม':                  {long:6.00},
+      '08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ':                          {long:4.00},
+      /* 09 ตู้ล็อคเกอร์สาธารณะ */
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา':          {long:1.50},
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง':           {long:2.50},
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้':            {long:2.50},
+      /* 10 AED */
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน':            {tall:1.40},
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา':                {tall:1.40},
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล':         {tall:1.40},
+      /* 11 จุดทิ้งขยะ */
+      '11 จุดทิ้งขยะ::ถังขยะแยกประเภท':                                {long:1.50},
+      '11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย':                     {tall:0.80},
+      '11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง':                          {tall:1.00},
+      /* 12 ลำโพงกระจายเสียง */
+      '12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน':                 {tall:4.00},
+      '12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม':               {tall:2.00},
+      '12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน':             {tall:1.50},
+      '12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน':               {tall:1.50},
+      /* 13 ป้ายและระบบ Wayfinding */
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม':       {tall:2.20},
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม':  {tall:2.00},
+      '13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง':        {tall:0.80},
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม':{tall:1.80},
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ':{tall:1.50},
+      /* 14 ร่มเงา–ต้นไม้–ภูมิทัศน์ */
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง':     {long:6.0},
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย':              {long:2.00},
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา':   {long:7.00},
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา':           {long:10.00},
+      /* 15 ความปลอดภัย */
+      '15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ':{tall:2.00},
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน':         {long:1.00},
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ':{tall:1.50},
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ':{long:3.00},
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ':{long:1.0},
+      /* 16 จักรยาน */
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack': {long:1.5},
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ':{long:2.50},
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม':{tall:0.525},
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว':      {long:3.5},
+      /* 17 ห้องน้ำสาธารณะ */
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง':           {long:7.0},
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง':       {long:7.00},
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ':             {long:13.00},
+      '17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก':                 {long:3.0},
+      /* 18 คน: fallback 2m */
+            '18 คน::คน 01': {tall:1.5},
+      '18 คน::คน 02': {tall:4},
+      '18 คน::คน 03': {tall:1.5},
+      '18 คน::คน 04': {tall:4},
+      '18 คน::คน 05': {tall:1.5},
+    };
+
+    /* ═════════════════════════════════════════════════════════════════
+       MODEL_SCALE_MULTIPLIER — ปรับแต่งสเกลแต่ละโมเดล (ค่าพื้นฐาน = 1.0)
+       ═════════════════════════════════════════════════════════════════
+       ใช้เพื่อปรับขนาดเพิ่มเติมของแต่ละโมเดล
+       ตัวอย่าง: 1.0 = 100% (ไม่เปลี่ยน), 0.8 = ลด 20%, 1.5 = เพิ่ม 50%
+       ═════════════════════════════════════════════════════════════════ */
+    const MODEL_SCALE_MULTIPLIER = {
+      /* 01 เก้าอี้ */
+      '01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย':                        1.0,
+      '01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม':                1.0,
+      '01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน':                    1.0,
+      '01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้':                             1.0,
+      '01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม':                     1.0,
+      /* 02 โต๊ะ */
+      '02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง':                              1.0,
+      '02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง':                       1.0,
+      '02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน':                                1.0,
+      '02 โต๊ะ::โต๊ะทำงานกลางแจ้ง':                                    1.0,
+      /* 03 เครื่องออกกำลังกาย */
+      '03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์':             1.5,
+      '03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว':         1.2,
+      '03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง':             1.0,
+      '03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ':             3.0,
+      '03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง':           3.0,
+      /* 04 เครื่องเล่นเด็ก */
+      '04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน':                    1.0,
+      '04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน':                  1.0,
+      '04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย':                          1.0,
+      '04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย':                   1.0,
+      '04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ':   1.0,
+      /* 05 กล้องวงจรปิด */
+      '05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน':                          1.0,
+      '05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์':                 1.0,
+      '05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา':                 1.0,
+      '05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง':                1.0,
+      /* 06 ตู้กดน้ำสาธารณะ */
+      '06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด':                    1.0,
+      '06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น':                  1.0,
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น':            1.0,
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง':                   1.0,
+      /* 07 ไฟส่องสว่าง */
+      '07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป':                            1.0,
+      '07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา':                         1.0,
+      '07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้':                1.0,
+      '07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ':                             1.0,
+      /* 08 ที่หลบฝน/หลังคา */
+      '08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง':              1.0,
+      '08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย':                  1.0,
+      '08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม':                  1.0,
+      '08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ':                          1.0,
+      /* 09 ตู้ล็อคเกอร์สาธารณะ */
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา':          1.0,
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง':           1.0,
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้':            1.0,
+      /* 10 AED */
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน':            1.0,
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา':                1.0,
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล':         1.0,
+      /* 11 จุดทิ้งขยะ */
+      '11 จุดทิ้งขยะ::ถังขยะแยกประเภท':                                1.0,
+      '11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย':                     1.0,
+      '11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง':                          1.0,
+      /* 12 ลำโพงกระจายเสียง */
+      '12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน':                 1.0,
+      '12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม':               0.5,
+      '12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน':             0.5,
+      '12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน':               1.0,
+      /* 13 ป้ายและระบบ Wayfinding */
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม':       1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม':  1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง':        1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม':1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ':0.5,
+      /* 14 ร่มเงา–ต้นไม้–ภูมิทัศน์ */
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง':     1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย':              1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา':   1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา':           1.0,
+      /* 15 ความปลอดภัย */
+      '15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน':         1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ':1.0,
+      /* 16 จักรยาน */
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack': 1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ':1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม':1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว':      1.0,
+      /* 17 ห้องน้ำสาธารณะ */
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง':           1.0,
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง':       1.0,
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ':             1.0,
+      '17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก':                 1.0,
+      /* 18 คน */
+      '18 คน::คน 01': 1.0,
+      '18 คน::คน 02': .35,
+      '18 คน::คน 03': 1.0,
+      '18 คน::คน 04': .25,
+      '18 คน::คน 05': .7,
+    };
+
+    /* ─ ITEM_SCALE_MUL: Individual scale multiplier for each item (1.0 = 100% original) ─ */
+    const ITEM_SCALE_MUL = {
+      /* 01 เก้าอี้ */
+      '01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย':                        1.0,
+      '01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม':                1.0,
+      '01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน':                    1.0,
+      '01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้':                             1.0,
+      '01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม':                     1.0,
+      /* 02 โต๊ะ */
+      '02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง':                              1.0,
+      '02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง':                       1.0,
+      '02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน':                                1.0,
+      '02 โต๊ะ::โต๊ะทำงานกลางแจ้ง':                                    1.0,
+      /* 03 เครื่องออกกำลังกาย */
+      '03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์':             1.5,
+      '03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว':         1.2,
+      '03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง':             1.0,
+      '03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ':             3.0,
+      '03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง':           3.0,
+      /* 04 เครื่องเล่นเด็ก */
+      '04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน':                    1.0,
+      '04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน':                  1.0,
+      '04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย':                          1.0,
+      '04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย':                   1.0,
+      '04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ':   1.0,
+      /* 05 กล้องวงจรปิด */
+      '05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน':                          1.0,
+      '05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์':                 1.0,
+      '05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา':                 1.0,
+      '05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง':                1.0,
+      /* 06 ตู้กดน้ำสาธารณะ */
+      '06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด':                    1.0,
+      '06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น':                  1.0,
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น':            1.0,
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง':                   1.0,
+      /* 07 ไฟส่องสว่าง */
+      '07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป':                            1.0,
+      '07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา':                         1.0,
+      '07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้':                1.0,
+      '07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ':                             1.0,
+      /* 08 ที่หลบฝน/หลังคา */
+      '08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง':              1.0,
+      '08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย':                  1.0,
+      '08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม':                  1.0,
+      '08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ':                          1.0,
+      /* 09 ตู้ล็อคเกอร์สาธารณะ */
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา':          1.0,
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง':           1.0,
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้':            1.0,
+      /* 10 AED */
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน':            1.0,
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา':                1.0,
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล':         1.0,
+      /* 11 จุดทิ้งขยะ */
+      '11 จุดทิ้งขยะ::ถังขยะแยกประเภท':                                1.0,
+      '11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย':                     1.0,
+      '11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง':                          1.0,
+      /* 12 ลำโพงกระจายเสียง */
+      '12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน':                 1.0,
+      '12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม':               1.0,
+      '12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน':             1.0,
+      '12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน':               1.0,
+      /* 13 ป้ายและระบบ Wayfinding */
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม':       1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม':  1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง':        1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม':1.0,
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ':1.0,
+      /* 14 ร่มเงา–ต้นไม้–ภูมิทัศน์ */
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง':     1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย':              1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา':   1.0,
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา':           1.0,
+      /* 15 ความปลอดภัย */
+      '15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน':         1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ':1.0,
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ':1.0,
+      /* 16 จักรยาน */
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack': 1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ':1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม':1.0,
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว':      1.0,
+      /* 17 ห้องน้ำสาธารณะ */
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง':           1.0,
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง':       1.0,
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ':             3.0,
+      '17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก':                 1.0,
+      /* 18 คน */
+      '18 คน::คน 01': 1.0,
+      '18 คน::คน 02': .35,
+      '18 คน::คน 03': 1.0,
+      '18 คน::คน 04': .25,
+      '18 คน::คน 05': .7,
+    };
+
+    function getGroupTitleByKey(key){for(const[t,l]of Object.entries(GROUPS))if(l.includes(key))return t;return null;}
+
+    /* computeBaseScale:
+       หลัง obj.rotation.x = PI/2:
+         size.x = กว้าง, size.y = ลึก (original Z), size.z = สูง (original Y)  */
+    function computeBaseScale(obj,key){
+      const t = ITEM_SCALE_M[key];
+      const mul = MODEL_SCALE_MULTIPLIER[key] || 1.0;
+      const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      if(!t){
+        const ln = Math.max(size.x,size.y);
+        return ln>0 ? ((2.0*UNIT_PER_M)/ln)*mul : 1;
+      }
+      if(t.tall){
+        return size.z>0 ? ((t.tall*UNIT_PER_M)/size.z)*mul : 1;
+      }
+      const ln = Math.max(size.x,size.y);
+      return ln>0 ? ((t.long*UNIT_PER_M)/ln)*mul : 1;
+    }
+
+    /* ─ MODEL LOADING ─ */
+    const templates={},counts={},buttons={};
+    const modelNames=[...new Set(Object.values(GROUPS).flat())];
+    modelNames.forEach(n=>counts[n]=0);
+
+    /* ชื่อโฟลเดอร์ Supabase ต่อแต่ละกลุ่ม (ตรงตาม bucket) */
+    const GROUP_FOLDER = {
+      '01 เก้าอี้':                                   '01 Chair',
+      '02 โต๊ะ':                                      '02 Tables',
+      '03 เครื่องออกกำลังกาย':                       '03 Exercise Equipment',
+      '04 เครื่องเล่นเด็ก':                          '04 Playground Equipment',
+      '05 กล้องวงจรปิด':                             '05 CCTV Cameras',
+      '06 ตู้กดน้ำสาธารณะ':                          '06 Public Water Dispensers',
+      '07 ไฟส่องสว่าง':                              '07 Lighting',
+      '08 ที่หลบฝน/หลังคา':                          '08 Rain Shelters Roof Structures',
+      '09 ตู้ล็อคเกอร์สาธารณะ':                      '09 Public Lockers',
+      '10 เครื่องกระตุกหัวใจ AED':                   '10 AED Defibrillators',
+      '11 จุดทิ้งขยะ':                               '11 Waste Disposal Points',
+      '12 ลำโพงกระจายเสียง':                         '12 Public Address Speakers',
+      '13 ป้ายและระบบ Wayfinding / Signage':          '13 Signage and Wayfinding Systems',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน':            '14 Shade Trees Functional Landscape',
+      '15 ความปลอดภัยและขอความช่วยเหลือ':            '15 Safety and Assistance',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้':        '16 Bicycle and Micromobility Management',
+      '17 ห้องน้ำสาธารณะ':                           '17 Public Restrooms',
+      '18 คน':                                   '18 People',
+    };
+
+    /* ITEM_PATH: ชื่อโฟลเดอร์ย่อยตรงตามชื่อภาษาอังกฤษใน Supabase/Drive
+       โครงสร้าง: {groupFolder}/{English subfolder name}/1.glb             */
+    const ITEM_PATH = {
+      /* ── 01 Chair ── */
+      '01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย':                          '01 Chair/A/1.glb',
+      '01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม':                  '01 Chair/B/1.glb',
+      '01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน':                      '01 Chair/C/1.glb',
+      '01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้':                               '01 Chair/D/1.glb',
+      '01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม':                       '01 Chair/E/1.glb',
+
+      /* ── 02 Tables ── (ชื่อโฟลเดอร์ตามภาพ Google Drive) */
+      '02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง':                                '02 Tables/Table - Picnic table with benches/1.glb',
+      '02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง':                         '02 Tables/Table - Standing bar table High table along running paths/1.glb',
+      '02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน':                                  '02 Tables/Table - Chess Board game table/1.glb',
+      '02 โต๊ะ::โต๊ะทำงานกลางแจ้ง':                                      '02 Tables/Table - Outdoor workstation/1.glb',
+
+      /* ── 03 Exercise Equipment ── (ชื่อโฟลเดอร์ตามภาพ Google Drive) */
+      '03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์':               '03 Exercise Equipment/Stretching Cool-down station/1.glb',
+      '03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว':           '03 Exercise Equipment/Bodyweight resistance training equipment/1.glb',
+      '03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง':               '03 Exercise Equipment/Outdoor cardio equipment/1.glb',
+      '03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ':               '03 Exercise Equipment/Balance training station for seniors/1.glb',
+      '03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง':             '03 Exercise Equipment/Outdoor dumbbell weight zone/1.glb',
+
+      /* ── 04 Playground Equipment ── */
+      '04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน':                       '04 Playground Equipment/Climbing frame Climbing wall/1.glb',
+      '04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน':                    '04 Playground Equipment/Slide-Tower-Bridge play structure/1.glb',
+      '04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย':                            '04 Playground Equipment/Safety swing set/1.glb',
+      '04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย':                     '04 Playground Equipment/Mist Spray water play feature/1.glb',
+      '04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ':     '04 Playground Equipment/Creative play zone Sand Nature-based/1.glb',
+
+      /* ── 05 CCTV Cameras ── */
+      '05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน':                            '05 CCTV Cameras/Park entrance exit camera/1.glb',
+      '05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์':                   '05 CCTV Cameras/Sports field and grandstand camera/1.glb',
+      '05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา':                   '05 CCTV Cameras/Camera along running paths and blind spots/1.glb',
+      '05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง':                  '05 CCTV Cameras/Camera near ponds high-risk areas/1.glb',
+
+      /* ── 06 Public Water Dispensers ── */
+      '06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด':                      '06 Public Water Dispensers/Drinking water with bottle-filling station/1.glb',
+      '06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น':                    '06 Public Water Dispensers/Wheelchair-accessible water dispenser/1.glb',
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น':              '06 Public Water Dispensers/Water hand-washing point near playground/1.glb',
+      '06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง':                     '06 Public Water Dispensers/Water point for pets/1.glb',
+
+      /* ── 07 Lighting ── */
+      '07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป':                              '07 Lighting/General pathway lighting/1.glb',
+      '07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา':                           '07 Lighting/Sports field floodlights/1.glb',
+      '07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้':                  '07 Lighting/Ambient lighting pond wooden walkway/1.glb',
+      '07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ':                               '07 Lighting/Smart solar lighting/1.glb',
+
+      /* ── 08 Rain Shelters Roof Structures ── */
+      '08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง':                '08 Rain Shelters Roof Structures/Open-air sun rain pavilion/1.glb',
+      '08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย':                    '08 Rain Shelters Roof Structures/Pergola with climbing plants/1.glb',
+      '08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม':                    '08 Rain Shelters Roof Structures/Sheltered spectator seating/1.glb',
+      '08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ':                            '08 Rain Shelters Roof Structures/Waiting Meeting kiosk/1.glb',
+
+      /* ── 09 Public Lockers ── */
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา':            '09 Public Lockers/Lockers for runners athletes/1.glb',
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง':             '09 Public Lockers/Storage lockers for urban events/1.glb',
+      '09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้':              '09 Public Lockers/Lockers for loaner equipment/1.glb',
+
+      /* ── 10 AED Defibrillators ── */
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน':              '10 AED Defibrillators/AED station Park Center/1.glb',
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา':                  '10 AED Defibrillators/AED station Sports Zone/1.glb',
+      '10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล':           '10 AED Defibrillators/AED station Near long-distance running track/1.glb',
+
+      /* ── 11 Waste Disposal Points ── */
+      '11 จุดทิ้งขยะ::ถังขยะแยกประเภท':                                  '11 Waste Disposal Points/Recycling bins Waste separation/1.glb',
+      '11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย':                       '11 Waste Disposal Points/Pathway waste bins Sub-stations/1.glb',
+      '11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง':                            '11 Waste Disposal Points/Pet waste bins/1.glb',
+
+      /* ── 12 Public Address Speakers ── */
+      '12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน':                   '12 Public Address Speakers/Park-wide emergency announcement system/1.glb',
+      '12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม':                 '12 Public Address Speakers/Speakers Sports and Activity Zones/1.glb',
+      '12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน':               '12 Public Address Speakers/Ambient music speakers Relaxation Zones/1.glb',
+      '12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน':                 '12 Public Address Speakers/Bilingual Announcement Park Information Points/1.glb',
+
+      /* ── 13 Signage and Wayfinding Systems ── */
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม':         '13 Signage and Wayfinding Systems/Integrated Park Map Signage/1.glb',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม':    '13 Signage and Wayfinding Systems/Post-mounted Directional Signage/1.glb',
+      '13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง':          '13 Signage and Wayfinding Systems/Running Track Distance Markers/1.glb',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม': '13 Signage and Wayfinding Systems/Area Facility Usage Rules Signage/1.glb',
+      '13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ':'13 Signage and Wayfinding Systems/Pond-side Hazard Warning Signage/1.glb',
+
+      /* ── 14 Shade Trees Functional Landscape ── */
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง':       '14 Shade Trees Functional Landscape/Shade-providing Tree Lines along Running Paths/1.glb',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย':                '14 Shade Trees Functional Landscape/Low Shrub Beds/1.glb',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา':     '14 Shade Trees Functional Landscape/Functional Lawn Areas with Shade/1.glb',
+      '14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา':             '14 Shade Trees Functional Landscape/Lightweight Sunshade Structures/1.glb',
+
+      /* ── 15 Safety and Assistance ── */
+      '15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ':'15 Safety and Assistance/SOS Emergency Posts with Lights and Signals/1.glb',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน':           '15 Safety and Assistance/Basic First Aid Stations/1.glb',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ':'15 Safety and Assistance/Zone Code Park Coordinate Signage for Reporting Incidents/1.glb',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ':'15 Safety and Assistance/Guardrails and Non-slip Edges along Ponds/1.glb',
+      '15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ':'15 Safety and Assistance/Staff Stations Service Communication Kiosks/1.glb',
+
+      /* ── 16 Bicycle and Micromobility Management ── */
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack':   '16 Bicycle and Micromobility Management/U-Rack Bicycle Parking/1.glb',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ':'16 Bicycle and Micromobility Management/Organized Scooter Micromobility Parking Zones/1.glb',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม': '16 Bicycle and Micromobility Management/Bicycle Repair Stations with Air Pumps/1.glb',
+      '16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว':        '16 Bicycle and Micromobility Management/Speed Calming Measures/1.glb',
+
+      /* ── 17 Public Restrooms ── */
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง':             '17 Public Restrooms/Small Gender-separated Single-stall Restrooms/1.glb',
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง':         '17 Public Restrooms/Medium-sized Gender-separated Restrooms 2 Stalls per Gender/1.glb',
+      '17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ':               '17 Public Restrooms/Large Restroom Facilities with Showers/1.glb',
+      '17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก':                   '17 Public Restrooms/Exterior Hand and Foot Washing Stations/1.glb',
+
+      /* ── 18 คน ── */
+      '18 คน::คน 01': '18 People/01/1.glb',
+      '18 คน::คน 02': '18 People/02/1.glb',
+      '18 คน::คน 03': '18 People/03/1.glb',
+      '18 คน::คน 04': '18 People/04/1.glb',
+      '18 คน::คน 05': '18 People/05/1.glb',
+    };
+
+    /* ── ทำโมเดลทุกชิ้นเป็นสีเทาอ่อน พร้อม shading และ shadow ที่ดี ──
+       ลบ texture map เพื่อกันสีดั้งเดิมรั่ว แล้วทาสีเทาอ่อนพร้อม PBR ที่เหมาะสมต่อเงา  */
+    function applyWhiteMaterial(root){
+      root.traverse(n=>{
+        if(!n.isMesh) return;
+        const mats = Array.isArray(n.material) ? n.material : [n.material];
+        mats.forEach(mat=>{
+          if(!mat) return;
+          // ลบ texture ทั้งหมดที่ส่งผลต่อสี
+          if(mat.map)           { mat.map.dispose();           mat.map=null; }
+          if(mat.normalMap)     { mat.normalMap.dispose();     mat.normalMap=null; }
+          if(mat.roughnessMap)  { mat.roughnessMap.dispose();  mat.roughnessMap=null; }
+          if(mat.metalnessMap)  { mat.metalnessMap.dispose();  mat.metalnessMap=null; }
+          if(mat.aoMap)         { mat.aoMap.dispose();         mat.aoMap=null; }
+          if(mat.emissiveMap)   { mat.emissiveMap.dispose();   mat.emissiveMap=null; }
+          // ตั้งค่าสีเทาอ่อน (Light Gray) พร้อม shading และ shadow ที่ดี
+          if(mat.color)     mat.color.setRGB(0.70, 0.70, 0.70);  // สีเทาอ่อน (ไม่ขาว)
+          if(mat.emissive)  mat.emissive.setRGB(0,0,0);
+          mat.roughness  = 0.65;   // เพิ่มความหยาบ เพื่อให้เงาชัดเจนขึ้น
+          mat.metalness  = 0.0;    // ไม่มีความเป็นโลหะ
+          mat.opacity    = 1;
+          mat.transparent= false;
+          mat.needsUpdate= true;
+        });
+      });
+    }
+
+    const loadModel=(name,filePath)=>{
+      const encodedPath = filePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+      const url=MODEL_BASE_URL+encodedPath;
+      loader.load(url,(gltf)=>{
+        const obj=gltf.scene; obj.rotation.x=Math.PI/2;
+        const box=new THREE.Box3().setFromObject(obj);
+        const center=box.getCenter(new THREE.Vector3()),min=box.min.clone();
+        const wrap=new THREE.Group(); wrap.add(obj);
+        obj.position.set(-center.x,-center.y,-min.z);
+        wrap.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.material)n.material=n.material.clone();}});
+        applyWhiteMaterial(wrap);
+        templates[name]=wrap;
+      },undefined,err=>console.warn('Failed:',url,err));
+    };
+
+    /* ── LAZY LOADING QUEUE — priority-aware, high concurrency ── */
+    const MODEL_QUEUE=[], loadingKeys=new Set(), failedKeys=new Set();
+    /* callbacks[key] = [{resolve,reject}] สำหรับหลาย caller รอโมเดลเดียวกัน */
+    const pendingCallbacks={};
+    let activeLoads=0;
+    /* HTTP/2 รองรับ parallel ได้มาก เพิ่มขีดจำกัดให้สูงขึ้นมาก */
+    const MAX_CONCURRENT=isMobile?8:24;
+
+    function processQueue(){
+      while(activeLoads<MAX_CONCURRENT&&MODEL_QUEUE.length>0){
+        const {key,filePath}=MODEL_QUEUE.shift();
+        activeLoads++;
+        const encodedPath = filePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+        const url=MODEL_BASE_URL+encodedPath;
+        loader.load(url,(gltf)=>{
+          const obj=gltf.scene; obj.rotation.x=Math.PI/2;
+          const box=new THREE.Box3().setFromObject(obj);
+          const center=box.getCenter(new THREE.Vector3()),min=box.min.clone();
+          const wrap=new THREE.Group(); wrap.add(obj);
+          obj.position.set(-center.x,-center.y,-min.z);
+          wrap.traverse(n=>{
+            if(n.isMesh){
+              n.castShadow=!isMobile; n.receiveShadow=!isMobile;
+              if(n.material) n.material=n.material.clone();
+            }
+          });
+          applyWhiteMaterial(wrap);
+          templates[key]=wrap;
+          loadingKeys.delete(key);
+          _setCardState(key,'ready');
+          activeLoads--; processQueue();
+          /* แจ้ง callback ทุกตัวที่รออยู่ */
+          (pendingCallbacks[key]||[]).forEach(cb=>cb.resolve(wrap));
+          delete pendingCallbacks[key];
+        },undefined,(err)=>{
+          console.warn('Load failed:',url,err);
+          loadingKeys.delete(key); failedKeys.add(key);
+          _setCardState(key,'error');
+          activeLoads--; processQueue();
+          (pendingCallbacks[key]||[]).forEach(cb=>cb.reject(err));
+          delete pendingCallbacks[key];
+        });
+      }
+    }
+
+    /* priority=true → ขึ้นหัวแถว (เมื่อคลิก/hover), false → ท้ายแถว (background) */
+    function loadModelLazy(key, priority=false){
+      if(templates[key]) return Promise.resolve(templates[key]);
+      if(failedKeys.has(key)){failedKeys.delete(key);}
+      return new Promise((resolve,reject)=>{
+        /* ลงทะเบียน callback */
+        if(!pendingCallbacks[key]) pendingCallbacks[key]=[];
+        pendingCallbacks[key].push({resolve,reject});
+
+        if(loadingKeys.has(key)) return; /* กำลังโหลดอยู่แล้ว รอ callback เฉยๆ */
+
+        const groupName=getGroupTitleByKey(key);
+        const idx=(GROUPS[groupName]||[]).indexOf(key);
+        const filePath=ITEM_PATH[key]||(groupName+'/'+(idx+1)+'.glb');
+        loadingKeys.add(key);
+        _setCardState(key,'loading');
+
+        if(priority){
+          /* ขึ้นหัวแถว — ผู้ใช้คลิก/hover เลือกแล้ว */
+          MODEL_QUEUE.unshift({key,filePath});
+        } else {
+          MODEL_QUEUE.push({key,filePath});
+        }
+        processQueue();
+      });
+    }
+
+    function _setCardState(key,state){
+      const card=buttons[key]; if(!card)return;
+      card.classList.remove('loading','load-error');
+      if(state==='loading') card.classList.add('loading');
+      if(state==='error')   card.classList.add('load-error');
+    }
+
+    /* ── BACKGROUND PRELOAD — โหลดโมเดลทุกตัวใน background ──
+       ตัวแรกของแต่ละกลุ่ม → โหลดทันที
+       ส่วนที่เหลือ → queue background ทีละ 4 ตัว ผ่าน requestIdleCallback  */
+    const allModelKeys = [...new Set(Object.values(GROUPS).flat())];
+    const firstOfGroup = new Set(Object.values(GROUPS).map(items=>items[0]).filter(Boolean));
+
+    firstOfGroup.forEach(key => loadModelLazy(key, false));
+
+    const scheduleBackgroundPreload = () => {
+      const remaining = allModelKeys.filter(k => !firstOfGroup.has(k));
+      let i = 0;
+      const loadNext = () => {
+        if(i >= remaining.length) return;
+        remaining.slice(i, i+4).forEach(k => loadModelLazy(k, false));
+        i += 4;
+        if(i < remaining.length){
+          if(typeof requestIdleCallback !== 'undefined'){
+            requestIdleCallback(loadNext, {timeout:800});
+          } else { setTimeout(loadNext, 300); }
+        }
+      };
+      if(typeof requestIdleCallback !== 'undefined'){
+        requestIdleCallback(loadNext, {timeout:1500});
+      } else { setTimeout(loadNext, 500); }
+    };
+    scheduleBackgroundPreload();
+
+    /* ─ BUILD LEFT MENU (grid + thumbnail) ─ */
+    const menu=document.getElementById('menu');
+    let activeKey=null;
+    function makeSafeId(str){return btoa(unescape(encodeURIComponent(str))).replace(/=/g,'');}
+
+    const makeCard=(key,groupName,itemIdx)=>{
+      const label=key.split('::')[1];
+      const safeId=makeSafeId(key);
+      const numPrefix=groupName.split(' ')[0];
+      const emoji=GROUP_EMOJI[numPrefix]||'📦';
+
+      const card=document.createElement('div');
+      card.className='item-card'; card.dataset.key=key;
+
+      /* ── icon priority:
+         1. ITEM_ICON[key]  — path รูปภาพรายตัว (/icon/xxx.png)
+         2. emoji fallback  — GROUP_EMOJI ถ้าโหลดรูปไม่ได้               */
+      function makeThumbEl(src, fallbackFn) {
+        const img = document.createElement('img');
+        img.className = 'thumb'; img.loading = 'lazy'; img.alt = label;
+        img.src = src;
+        img.onerror = fallbackFn;
+        return img;
+      }
+      function makeEmojiEl(e) {
+        const ph = document.createElement('div');
+        ph.className = 'thumb-placeholder'; ph.textContent = e;
+        return ph;
+      }
+
+      /* แปลง /icon/xxx.png → Supabase ICON_BASE_URL/xxx.png */
+      const rawIcon = ITEM_ICON[key];
+      const iconSrc = rawIcon
+        ? rawIcon.startsWith('/icon/')
+          ? ICON_BASE_URL + encodeURI(rawIcon.replace('/icon/', ''))
+          : rawIcon
+        : null;
+      let thumbEl;
+      if (iconSrc) {
+        thumbEl = makeThumbEl(iconSrc, () => {
+          card.replaceChild(makeEmojiEl(emoji), thumbEl);
+        });
+      } else {
+        thumbEl = makeEmojiEl(emoji);
+      }
+
+      card.appendChild(thumbEl);
+
+      const lbl=document.createElement('div'); lbl.className='card-label'; lbl.textContent=label;
+      card.appendChild(lbl);
+
+      const cnt=document.createElement('div'); cnt.className='card-count'; cnt.id='count_'+safeId; cnt.textContent='0';
+      card.appendChild(cnt);
+
+      /* loading spinner + error badge */
+      const spn=document.createElement('div'); spn.className='card-spinner'; card.appendChild(spn);
+      const err=document.createElement('div'); err.className='card-err'; err.textContent='⚠ โหลดไม่ได้ (แตะเพื่อลองใหม่)'; card.appendChild(err);
+
+      /* hover → เริ่มโหลดล่วงหน้าก่อนคลิก (high priority) */
+      card.addEventListener('pointerenter', () => {
+        if(!templates[key] && !loadingKeys.has(key) && !failedKeys.has(key)){
+          loadModelLazy(key, true);
+        }
+      }, { passive: true });
+
+      card.addEventListener('click',()=>{
+        if(card.classList.contains('loading')) return;
+        if(failedKeys.has(key)){
+          loadModelLazy(key, true);
+          return;
+        }
+        if(!templates[key]){
+          activeKey=key;
+          document.getElementById('selNameDisp').textContent=label+' ⏳';
+          Object.values(buttons).forEach(b=>b.classList.remove('active'));
+          card.classList.add('active'); setSelected(null);
+          loadModelLazy(key, true).then(()=>{
+            if(activeKey===key) document.getElementById('selNameDisp').textContent=label;
+          });
+          return;
+        }
+        activeKey=key;
+        document.getElementById('selNameDisp').textContent=label;
+        Object.values(buttons).forEach(b=>b.classList.remove('active'));
+        card.classList.add('active'); setSelected(null);
+      });
+      buttons[key]=card; return card;
+    };
+
+    Object.entries(GROUPS).forEach(([title,items])=>{
+      const wrap=document.createElement('div'); wrap.className='group';
+      const titleEl=document.createElement('div'); titleEl.className='group-title'; titleEl.textContent=title;
+      wrap.appendChild(titleEl);
+      const grid=document.createElement('div'); grid.className='item-grid';
+      items.forEach((k,i)=>grid.appendChild(makeCard(k,title,i)));
+      wrap.appendChild(grid); menu.appendChild(wrap);
+    });
+
+    /* ─ PLACED OBJECTS ─ */
+    const placedStack=[]; let totalPlaced=0;
+    const updateCount=(key)=>{
+      const safeId=makeSafeId(key);
+      const el=document.getElementById('count_'+safeId);
+      if(el){el.textContent=counts[key];el.classList.toggle('show',counts[key]>0);}
+      document.getElementById('totalPlaced').textContent=totalPlaced;
+    };
+
+    document.getElementById('btn_undo').addEventListener('click',()=>{
+      if(!placedStack.length)return;
+      const obj=placedStack.pop(); const type=obj.userData.type;
+      scene.remove(obj); counts[type]--; totalPlaced--; updateCount(type);
+      if(selected===obj)setSelected(null);
+    });
+
+    document.getElementById('btn_snap').addEventListener('click',()=>{
+      const a=document.createElement('a'); a.download='capture.png'; a.href=capturePNG(); a.click();
+    });
+
+    /* ─ SELECTION ─ */
+    let selected=null,helper=null,ROT_AXIS='z';
+    const rotSlider=document.getElementById('rotSlider');
+    const colorInput=document.getElementById('objColor');
+
+    function setSelected(obj){
+      if(helper){scene.remove(helper);helper=null;}
+      selected=obj||null;
+      if(selected){
+        document.getElementById('propPanelWrapper').style.display='block';
+        helper=new THREE.BoxHelper(selected,0x62d0ff); scene.add(helper);
+        rotSlider.value=Math.round(THREE.MathUtils.radToDeg(selected.rotation[ROT_AXIS]));
+        document.getElementById('selNameDisp').textContent=selected.userData.type.split('::')[1]||selected.userData.type;
+        document.getElementById('objScale').value=(selected.userData.userScaleMul||1).toFixed(2);
+        let fc='#ffffff';
+        selected.traverse(c=>{if(c.isMesh&&c.material?.color)fc='#'+c.material.color.getHexString();});
+        colorInput.value=fc;
+      } else { document.getElementById('propPanelWrapper').style.display='none'; }
+    }
+
+    colorInput.addEventListener('input',e=>{
+      if(!selected)return;
+      selected.traverse(c=>{if(c.isMesh&&c.material?.color)c.material.color.set(e.target.value);});
+    });
+
+    document.getElementById('btn_delete_sel').addEventListener('click',()=>{
+      if(!selected)return;
+      scene.remove(selected); if(helper)scene.remove(helper);
+      const type=selected.userData.type; counts[type]--; totalPlaced--;
+      updateCount(type); placedStack.splice(placedStack.indexOf(selected),1); setSelected(null);
+    });
+
+    document.getElementById('objScale').addEventListener('input',e=>{
+      if(!selected)return;
+      const mul=parseFloat(e.target.value);
+      if(mul>0){selected.userData.userScaleMul=mul;selected.scale.setScalar((selected.userData.baseScale||1)*mul);if(helper)helper.update();}
+    });
+
+    /* ─ ROTATION ─ */
+    const rotAxisSel=document.getElementById('rotAxis');
+    const axisLabel=document.getElementById('axisLabel');
+    const rotDegEl=document.getElementById('rotDeg');
+
+    rotAxisSel.addEventListener('change',e=>{
+      ROT_AXIS=e.target.value; axisLabel.textContent=ROT_AXIS.toUpperCase();
+      if(selected){const d=Math.round(THREE.MathUtils.radToDeg(selected.rotation[ROT_AXIS]));rotSlider.value=d;rotDegEl.textContent=d+'°';}
+    });
+    rotSlider.addEventListener('input',e=>{
+      const d=parseFloat(e.target.value); rotDegEl.textContent=Math.round(d)+'°';
+      if(selected){selected.rotation[ROT_AXIS]=THREE.MathUtils.degToRad(d);if(helper)helper.update();}
+    });
+
+    /* ─ DRAG (mouse) ─ */
+    let isDragging=false,dragItem=null;
+    const raycaster=new THREE.Raycaster();
+
+    renderer.domElement.addEventListener('mousedown',e=>{
+      const m=getMouseNDC(e); raycaster.setFromCamera(m,camera);
+      let pick=null;
+      for(const h of raycaster.intersectObjects(scene.children,true)){
+        let n=h.object;
+        while(n&&n!==scene){if(n.userData.type){pick=n;break;}n=n.parent;}
+        if(pick)break;
+      }
+      if(pick){isDragging=true;dragItem=pick;controls.enabled=false;setSelected(pick);}
+    });
+    renderer.domElement.addEventListener('mousemove',e=>{
+      if(!isDragging||!dragItem)return;
+      raycaster.setFromCamera(getMouseNDC(e),camera);
+      const hit=raycaster.intersectObject(ground)[0];
+      if(hit){dragItem.position.set(Math.round(hit.point.x/50)*50,Math.round(hit.point.y/50)*50,0);if(helper)helper.update();}
+    });
+    renderer.domElement.addEventListener('mouseup',()=>{isDragging=false;dragItem=null;controls.enabled=true;});
+
+    /* ─ DRAG (touch / iOS) ─ */
+    function getTouchNDC(touch){
+      const r=renderer.domElement.getBoundingClientRect();
+      return new THREE.Vector2(((touch.clientX-r.left)/r.width)*2-1,-((touch.clientY-r.top)/r.height)*2+1);
+    }
+    let touchDragItem=null, touchDragging=false;
+    renderer.domElement.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1)return;
+      const m=getTouchNDC(e.touches[0]); raycaster.setFromCamera(m,camera);
+      let pick=null;
+      for(const h of raycaster.intersectObjects(scene.children,true)){
+        let n=h.object;
+        while(n&&n!==scene){if(n.userData.type){pick=n;break;}n=n.parent;}
+        if(pick)break;
+      }
+      if(pick){touchDragging=true;touchDragItem=pick;controls.enabled=false;setSelected(pick);}
+    },{passive:true});
+    renderer.domElement.addEventListener('touchmove',e=>{
+      if(!touchDragging||!touchDragItem||e.touches.length!==1)return;
+      e.preventDefault();
+      raycaster.setFromCamera(getTouchNDC(e.touches[0]),camera);
+      const hit=raycaster.intersectObject(ground)[0];
+      if(hit){touchDragItem.position.set(Math.round(hit.point.x/50)*50,Math.round(hit.point.y/50)*50,0);if(helper)helper.update();}
+    },{passive:false});
+    renderer.domElement.addEventListener('touchend',()=>{touchDragging=false;touchDragItem=null;controls.enabled=true;},{passive:true});
+
+    /* ─ PLACE (double-click mouse) ─ */
+    function doPlace(ndcVec){
+      if(!activeKey)return;
+      if(!templates[activeKey]){
+        loadModelLazy(activeKey, true).then(()=>{ /* user can try placing again */ });
+        return;
+      }
+      raycaster.setFromCamera(ndcVec,camera);
+      const hit=raycaster.intersectObject(ground)[0]; if(!hit)return;
+      const md=templates[activeKey].clone(true);
+      const base=computeBaseScale(md,activeKey);
+      md.userData.baseScale=base; md.userData.userScaleMul=1; md.scale.setScalar(base);
+      md.position.set(Math.round(hit.point.x/100)*100,Math.round(hit.point.y/100)*100,0);
+      md.userData.type=activeKey;
+      scene.add(md); placedStack.push(md); counts[activeKey]++; totalPlaced++;
+      updateCount(activeKey); setSelected(md);
+    }
+
+    renderer.domElement.addEventListener('dblclick',e=>{ doPlace(getMouseNDC(e)); });
+
+    /* ─ DOUBLE-TAP (iOS place) ─ */
+    let lastTap=0;
+    renderer.domElement.addEventListener('touchend',e=>{
+      if(touchDragging) return;
+      const now=Date.now();
+      if(now-lastTap<320&&e.changedTouches.length===1){
+        doPlace(getTouchNDC(e.changedTouches[0]));
+      }
+      lastTap=now;
+    },{passive:true});
+
+    /* ─ SUPABASE ─ */
+    async function uploadToSupabase(blob){
+      const now=new Date();
+      const ts=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-')+'_'+
+               [String(now.getHours()).padStart(2,'0'),String(now.getMinutes()).padStart(2,'0'),String(now.getSeconds()).padStart(2,'0')].join('-');
+      const resp=await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/submission_${ts}.png`,{
+        method:'POST',headers:{'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'image/png'},body:blob
+      });
+      if(!resp.ok)throw new Error('Supabase upload failed: '+resp.statusText);
+      return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/submission_${ts}.png`;
+    }
+
+    async function logToGoogleSheets(publicUrl, info){
+      const timestamp = new Date().toISOString();
+
+      /* ── Sheet 1: บันทึกจำนวนโมเดลที่เลือกทั้งหมด ── */
+      fetch(COUNTS_SHEET_URL, {
+        method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({
+          submittedAt:  timestamp,
+          total:        totalPlaced,
+          summary:      publicUrl,
+          details:      counts,      // { 'กลุ่ม::ชื่อ': จำนวน, ... }
+          pageLink:     location.href,
+        })
+      });
+
+      /* ── Sheet 2: บันทึกข้อเสนอแนะเพิ่มเติม (ส่งเฉพาะเมื่อมีข้อความ) ── */
+      if(info){
+        fetch(FEEDBACK_SHEET_URL, {
+          method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify({
+            submittedAt:    timestamp,
+            additionalInfo: info,
+            total:          totalPlaced,
+            summary:        publicUrl,
+            pageLink:       location.href,
+          })
+        });
+      }
+    }
+
+    document.getElementById('btn_submit').addEventListener('click',async()=>{
+      const btn=document.getElementById('btn_submit'),orig=btn.textContent;
+      try{
+        if(totalPlaced===0){alert('กรุณาวางวัตถุก่อนส่ง');return;}
+        const info=document.getElementById('additionalInfo').value.trim();
+        btn.textContent='⏳ กำลังประมวลผล...'; btn.disabled=true;
+        const url=await uploadToSupabase(dataURLtoBlob(capturePNG()));
+        btn.textContent='⏳ กำลังบันทึกข้อมูล...';
+        await logToGoogleSheets(url,info);
+        btn.textContent='✔ เสร็จสิ้น!';
+        setTimeout(()=>{location.href='gallery.html';},1000);
+      }catch(err){
+        console.error(err); alert('เกิดข้อผิดพลาด: '+err.message);
+        btn.textContent=orig; btn.disabled=false;
+      }
+    });
+
+    window.addEventListener('resize',()=>{
+      renderer.setSize(innerWidth,innerHeight);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile?1.5:2));
+      camera.aspect=innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    let rotDir=0;
+    document.getElementById('btn_rot_holdL').onmousedown=()=>rotDir=-1;
+    document.getElementById('btn_rot_holdL').onmouseup=()=>rotDir=0;
+    document.getElementById('btn_rot_holdR').onmousedown=()=>rotDir=1;
+    document.getElementById('btn_rot_holdR').onmouseup=()=>rotDir=0;
+
+    (function animate(){
+      requestAnimationFrame(animate); stars.update(); controls.update();
+      if(selected&&rotDir!==0){
+        selected.rotation[ROT_AXIS]+=0.05*rotDir;
+        const d=Math.round(THREE.MathUtils.radToDeg(selected.rotation[ROT_AXIS]));
+        rotSlider.value=d; rotDegEl.textContent=d+'°'; if(helper)helper.update();
+      }
+      renderer.render(scene,camera);
+    })();
+  </script>
+</body>
+</html>
 
