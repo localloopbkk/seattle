@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🌿 Model_Pravet · Street Furniture Catalog</title>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<style>
+:root{
+  --bg:#f0eff7;--surface:#ffffff;--surface2:#f8f7fd;
+  --border:rgba(120,100,200,.13);--text:#2d2546;--muted:#8b82b0;
+  --pink:#f9a8d4;--pink2:#fce7f3;--lav:#c4b5fd;--lav2:#ede9fe;
+  --sky:#7dd3fc;--sky2:#e0f2fe;
+  --rad:16px;--rads:10px;--sh:0 2px 16px rgba(100,80,180,.10);--shL:0 8px 32px rgba(100,80,180,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--text);}
+body{background:var(--bg);overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--lav);border-radius:99px}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
+.sidebar{background:linear-gradient(160deg,#fdf4ff 0%,#ede9fe 55%,#e0f2fe 100%);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;padding:18px 13px;overflow-y:auto;display:flex;flex-direction:column;gap:11px;}
+.brand{background:white;border-radius:var(--rad);padding:13px 15px;box-shadow:var(--sh);border:1px solid var(--border);display:flex;align-items:center;gap:11px;}
+.brand-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--lav),var(--pink));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.brand h1{font-size:12.5px;font-weight:800;line-height:1.3;}
+.brand small{color:var(--muted);font-size:10.5px;}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;}
+.tabbtn{flex:1;min-width:55px;padding:7px 4px;border-radius:var(--rads);border:1.5px solid var(--border);background:white;color:var(--muted);cursor:pointer;font-weight:700;font-size:10.5px;transition:all .18s;text-align:center;}
+.tabbtn.active{background:linear-gradient(135deg,var(--lav),var(--pink));border-color:transparent;color:white;box-shadow:0 2px 8px rgba(196,181,253,.4);}
+.tabbtn:hover:not(.active){background:var(--lav2);color:var(--text);}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.kpi{background:white;border-radius:var(--rads);padding:9px 11px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(100,80,180,.06);}
+.kpi .lbl{font-size:9.5px;color:var(--muted);margin-bottom:3px;}
+.kpi .val{font-size:20px;font-weight:900;}
+.search-box{background:white;border-radius:var(--rads);border:1.5px solid var(--border);display:flex;align-items:center;gap:7px;padding:9px 11px;box-shadow:0 1px 4px rgba(100,80,180,.06);}
+.search-box input{width:100%;border:none;outline:none;font-size:12px;color:var(--text);background:transparent;}
+.search-box input::placeholder{color:var(--muted);}
+.nav-list{list-style:none;display:flex;flex-direction:column;gap:2px;}
+.nr{display:flex;justify-content:space-between;align-items:center;gap:5px;}
+.nr span{font-size:11px;font-weight:600;}
+.nbar{height:3px;background:var(--lav2);border-radius:99px;overflow:hidden;}
+.nbarf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--lav),var(--pink));}
+.pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--lav2);color:#7c3aed;border:1px solid rgba(139,92,246,.2);white-space:nowrap;}
+.main{padding:20px 20px 180px;overflow:auto;}
+.topbar{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px;}
+.titleblock h2{font-size:20px;font-weight:900;}
+.titleblock p{color:var(--muted);font-size:12px;margin-top:4px;}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.btn{padding:9px 15px;border-radius:var(--rads);border:1.5px solid var(--border);background:white;color:var(--text);cursor:pointer;font-weight:700;font-size:12px;box-shadow:var(--sh);transition:all .15s;}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shL);}
+.btn.primary{background:linear-gradient(135deg,var(--lav),var(--pink));border-color:transparent;color:white;box-shadow:0 3px 12px rgba(196,181,253,.4);}
+.panel{background:var(--surface);border-radius:var(--rad);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px;}
+.panel-hd{padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);}
+.panel-hd-l{display:flex;align-items:center;gap:10px;}
+.cbadge{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:white;flex-shrink:0;}
+.panel-hd strong{font-size:13px;font-weight:800;}
+.panel-body{padding:13px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px;}
+.card{background:var(--surface2);border-radius:var(--rad);border:1.5px solid var(--border);overflow:hidden;display:flex;flex-direction:column;transition:all .2s;box-shadow:0 1px 5px rgba(100,80,180,.06);}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shL);border-color:var(--lav);}
+.thumb{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--lav2),var(--sky2));}
+model-viewer{width:100%;height:100%;display:block;background:transparent;opacity:0;transition:opacity .4s;}
+.mv-sk{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:linear-gradient(135deg,var(--lav2) 0%,var(--sky2) 100%);}
+.spin{width:30px;height:30px;border:2.5px solid rgba(196,181,253,.35);border-top-color:var(--lav);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mv-sk span{font-size:9.5px;color:var(--muted);}
+.fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;gap:4px;background:linear-gradient(135deg,#fff5f5,#fff0f6);}
+.fallback .fi{font-size:22px;}.fallback .ft{font-size:11px;color:var(--muted);}.fallback .fu{font-size:8px;color:#ccc;word-break:break-all;line-height:1.3;}
+.card-body{padding:10px 11px 11px;display:flex;flex-direction:column;gap:5px;flex:1;}
+.card-name{font-size:12px;font-weight:800;line-height:1.35;}
+.card-path{font-size:9px;color:var(--muted);word-break:break-word;line-height:1.3;}
+.urow{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;}
+.urow span{color:var(--muted);}.urow b{font-weight:800;}
+.ubar{height:5px;border-radius:99px;background:var(--lav2);overflow:hidden;}
+.ubarf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--lav),var(--pink));}
+.spacer{flex:1;}
+.sel-btn{width:100%;padding:8px;border-radius:9px;border:1.5px solid rgba(139,92,246,.22);background:linear-gradient(135deg,var(--lav2),var(--pink2));color:#7c3aed;cursor:pointer;font-weight:800;font-size:11px;transition:all .15s;}
+.sel-btn:hover{background:linear-gradient(135deg,var(--lav),var(--pink));color:white;border-color:transparent;}
+.net-wrap{display:none;height:calc(100vh - 140px);min-height:460px;}
+canvas{width:100%;height:100%;display:block;background:linear-gradient(135deg,var(--lav2),var(--sky2));border-radius:var(--rad);border:1px solid var(--border);}
+.tooltip{position:fixed;pointer-events:none;z-index:9999;background:white;border:1.5px solid var(--lav);color:var(--text);padding:8px 11px;border-radius:var(--rads);font-size:12px;max-width:200px;display:none;box-shadow:var(--shL);}
+/* SUGGESTIONS */
+.sugg-wrap{display:none;}
+.sugg-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.sugg-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.sugg-stat{background:white;border-radius:var(--rads);padding:12px 14px;border:1px solid var(--border);box-shadow:var(--sh);text-align:center;}
+.sugg-stat .s-num{font-size:26px;font-weight:900;background:linear-gradient(135deg,var(--lav),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sugg-stat .s-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+.sugg-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.sugg-card{background:white;border-radius:var(--rad);border:1px solid var(--border);padding:14px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:8px;transition:all .18s;}
+.sugg-card:hover{transform:translateY(-2px);box-shadow:var(--shL);border-color:var(--lav);}
+.sugg-card .sc-top{display:flex;align-items:center;gap:9px;}
+.sugg-card .sc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:white;flex-shrink:0;}
+.sugg-card .sc-num{font-size:10px;font-weight:700;color:var(--muted);}
+.sugg-card .sc-text{font-size:12.5px;line-height:1.7;color:var(--text);background:var(--surface2);border-radius:9px;padding:11px 13px;border-left:3px solid var(--lav);}
+.data-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:10.5px;font-weight:700;border:1px solid rgba(139,92,246,.2);}
+.data-badge.live{background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#065f46;border-color:rgba(16,185,129,.2);}
+.data-badge.mock{background:var(--lav2);color:#7c3aed;}
+.subs-wrap{margin:18px 0;padding:14px;background:white;border:1.5px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);}
+.subs-head{font-size:12px;font-weight:800;margin-bottom:10px;color:var(--text);}
+.subs-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+.sub-card{flex:0 0 160px;border:1.5px solid var(--border);border-radius:var(--rads);overflow:hidden;text-decoration:none;color:var(--text);background:var(--lav2);transition:transform .15s,border-color .15s;}
+.sub-card:hover{transform:translateY(-2px);border-color:var(--lav);}
+.sub-card img{display:block;width:100%;height:100px;object-fit:cover;background:#eee;}
+.sub-meta{display:flex;gap:6px;justify-content:space-between;align-items:center;padding:6px 8px;font-size:10px;}
+.sub-meta span{color:var(--muted);}
+.sheet-link{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--rads);background:white;border:1.5px solid var(--border);color:var(--text);text-decoration:none;font-size:11px;font-weight:700;box-shadow:var(--sh);transition:all .15s;}
+.sheet-link:hover{background:var(--lav2);border-color:var(--lav);}
+/* MODEL COUNT TABLE */
+.model-count-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+.model-count-table th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border);background:var(--surface2);}
+.model-count-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.model-count-table tr:hover td{background:var(--lav2);}
+.model-count-table tr.selected td{background:linear-gradient(90deg,rgba(196,181,253,.08),transparent);}
+.mct-bar{height:8px;background:var(--lav2);border-radius:99px;overflow:hidden;min-width:60px;}
+.mct-barf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--lav),var(--pink));}
+.cnt-badge{font-size:13px;font-weight:900;padding:2px 8px;border-radius:6px;background:var(--lav2);color:#7c3aed;min-width:28px;text-align:center;display:inline-block;}
+.cnt-badge.has-count{background:linear-gradient(135deg,var(--lav),var(--pink));color:white;}
+/* COLORS */
+.c1{background:linear-gradient(135deg,#a78bfa,#c4b5fd);}.c2{background:linear-gradient(135deg,#f472b6,#f9a8d4);}
+.c3{background:linear-gradient(135deg,#34d399,#6ee7b7);}.c4{background:linear-gradient(135deg,#fb923c,#fca5a5);}
+.c5{background:linear-gradient(135deg,#38bdf8,#7dd3fc);}.c6{background:linear-gradient(135deg,#a3e635,#bef264);}
+.c7{background:linear-gradient(135deg,#fbbf24,#fde68a);}.c8{background:linear-gradient(135deg,#e879f9,#f0abfc);}
+.c9{background:linear-gradient(135deg,#2dd4bf,#5eead4);}.c10{background:linear-gradient(135deg,#f87171,#fca5a5);}
+.c11{background:linear-gradient(135deg,#60a5fa,#93c5fd);}.c12{background:linear-gradient(135deg,#4ade80,#86efac);}
+.c13{background:linear-gradient(135deg,#f59e0b,#fcd34d);}.c14{background:linear-gradient(135deg,#10b981,#34d399);}
+.c15{background:linear-gradient(135deg,#ef4444,#f87171);}.c16{background:linear-gradient(135deg,#6366f1,#818cf8);}
+.c17{background:linear-gradient(135deg,#ec4899,#f472b6);}.c18{background:linear-gradient(135deg,#94a3b8,#cbd5e1);}
+@media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;max-height:280px;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">🌿</div>
+    <div><h1>Street Furniture Catalog</h1><small id="brandSub">Model_Pravet · กำลังโหลด…</small></div>
+  </div>
+  <div class="tabs">
+    <button class="tabbtn active" id="tabCatalog">📦 แคตตาล็อก</button>
+    <button class="tabbtn" id="tabDash">📊 แดชบอร์ด</button>
+    <button class="tabbtn" id="tabNet">🔗 เครือข่าย</button>
+    <button class="tabbtn" id="tabSugg">💬 ข้อเสนอแนะ</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lbl">👥 ผู้เข้าร่วม</div><div class="val" id="kpiP">…</div></div>
+    <div class="kpi"><div class="lbl">✅ การเลือกรวม</div><div class="val" id="kpiS">…</div></div>
+    <div class="kpi"><div class="lbl">🧩 โมเดลที่เลือก</div><div class="val" id="kpiSelected">…</div></div>
+    <div class="kpi"><div class="lbl">📁 หมวดหมู่</div><div class="val" id="kpiCats">…</div></div>
+  </div>
+  <div class="search-box"><span>🔍</span><input id="searchInput" placeholder="ค้นหา… เช่น Chair, เก้าอี้"/></div>
+  <ul class="nav-list" id="navList"></ul>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="titleblock">
+      <h2>🌳 ครุภัณฑ์สาธารณะ · Pravet Park</h2>
+      <p>GLB models จาก Supabase · Model_Pravet · หมุน / ซูม / เลือก · lazy-load</p>
+    </div>
+    <div class="controls">
+      <span id="dataModeBadge" class="data-badge mock">◌ กำลังโหลด…</span>
+      <button class="btn" id="btnReload">🔄 โหลดข้อมูลใหม่</button>
+      <button class="btn primary" id="btnCSV">📥 Export CSV</button>
+    </div>
+  </div>
+  <section id="catalogWrap"></section>
+  <section id="dashWrap" style="display:none;"></section>
+  <section class="panel net-wrap" id="networkWrap">
+    <div class="panel-hd">
+      <strong>🔗 เครือข่ายการเลือกหมวดหมู่ร่วมกัน</strong>
+      <span class="pill">node · edge = co-selected</span>
+    </div>
+    <div class="panel-body" style="height:calc(100% - 50px);"><canvas id="netCanvas"></canvas></div>
+  </section>
+
+  <!-- SUGGESTIONS -->
+  <section class="subs-wrap" id="subsWrap" style="display:none;">
+    <div class="subs-head">🖼️ ภาพการส่งผลงาน <span id="subsCount"></span></div>
+    <div class="subs-strip" id="subsStrip"></div>
+  </section>
+
+  <section class="sugg-wrap" id="suggWrap">
+    <div class="sugg-header">
+      <div>
+        <h3 style="font-size:17px;font-weight:900;">💬 ข้อเสนอแนะเพิ่มเติม</h3>
+        <p style="font-size:12px;color:var(--muted);margin-top:3px;">ความคิดเห็นจากผู้เข้าร่วม (Column E)</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="suggDataBadge" class="data-badge mock">◌ กำลังโหลด…</span>
+        <a href="https://docs.google.com/spreadsheets/d/1MJIwESAxuGGwXjEZr7q7Xu9x7159SAYbDePapHdmoSs/edit?usp=sharing" target="_blank" class="sheet-link">📊 เปิด Sheet</a>
+      </div>
+    </div>
+    <div class="sugg-stats">
+      <div class="sugg-stat"><div class="s-num" id="suggCount">—</div><div class="s-lbl">ข้อเสนอแนะทั้งหมด</div></div>
+      <div class="sugg-stat"><div class="s-num" id="suggNonEmpty">—</div><div class="s-lbl">มีข้อความ</div></div>
+      <div class="sugg-stat"><div class="s-num" id="suggTotal">—</div><div class="s-lbl">แถวทั้งหมดใน Sheet</div></div>
+    </div>
+    <div id="suggList" class="sugg-list">
+      <div style="display:flex;align-items:center;gap:10px;padding:40px;color:var(--muted);font-size:13px;">
+        <div class="spin"></div><span>กำลังโหลด column E…</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="tooltip" id="tip"></div>
+</main>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   SHEET IDs
+═══════════════════════════════════════════════ */
+const SHEET1_ID = "11TNv7OQtxeFjaMX_sUuSWH6R8Sb35GIDqsIUJs2UrVQ";
+const SHEET2_ID = "1MJIwESAxuGGwXjEZr7q7Xu9x7159SAYbDePapHdmoSs";
+const SHEET1_TAB = "submissions";   // tab the submission app writes to
+
+/* ═══════════════════════════════════════════════
+   EMBEDDED DATA FROM SHEET 1 (JSON snapshot)
+   Keys: "THAI_CAT::THAI_MODEL", Values: count
+═══════════════════════════════════════════════ */
+const SHEET1_JSON = {
+  "01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย":0,
+  "01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม":1,
+  "01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน":0,
+  "01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้":0,
+  "01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม":1,
+  "02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง":0,
+  "02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง":1,
+  "02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน":0,
+  "02 โต๊ะ::โต๊ะทำงานกลางแจ้ง":0,
+  "03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์":0,
+  "03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว":1,
+  "03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง":0,
+  "03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ":1,
+  "03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง":1,
+  "04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน":2,
+  "04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน":0,
+  "04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย":2,
+  "04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย":0,
+  "04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ":0,
+  "05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน":1,
+  "05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์":1,
+  "05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา":1,
+  "05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง":1,
+  "06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด":1,
+  "06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น":1,
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น":1,
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง":1,
+  "07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป":0,
+  "07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา":0,
+  "07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้":0,
+  "07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ":0,
+  "08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง":0,
+  "08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย":0,
+  "08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม":0,
+  "08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล":0,
+  "11 จุดทิ้งขยะ::ถังขยะแยกประเภท":0,
+  "11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย":0,
+  "11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง":0,
+  "12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน":0,
+  "12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม":0,
+  "12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน":0,
+  "12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ":0,
+  "17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก":0,
+  "18 คน::คน 01":0,"18 คน::คน 02":0,"18 คน::คน 03":0,"18 คน::คน 04":0,"18 คน::คน 05":0
+};
+
+/* ═══════════════════════════════════════════════
+   THAI ↔ ENGLISH MAPPING
+   Maps "thaiCatPrefix::thaiModelName" → catalog mk (catId/englishItemName)
+═══════════════════════════════════════════════ */
+const THAI_TO_MK = {
+  "01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย":"01/Low-profile outdoor bench",
+  "01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม":"01/Small-scale stadium/grandstand seating",
+  "01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน":"01/Chair with backrest and armrests",
+  "01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้":"01/Circular tree bench",
+  "01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม":"01/Recliner/Outdoor lounge chair",
+  "02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง":"02/Picnic table with benches",
+  "02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง":"02/Standing bar table/High table along running paths",
+  "02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน":"02/Chess/Board game table",
+  "02 โต๊ะ::โต๊ะทำงานกลางแจ้ง":"02/Outdoor workstation",
+  "03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์":"03/Stretching/Cool-down station",
+  "03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว":"03/Bodyweight resistance training equipment",
+  "03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง":"03/Outdoor cardio equipment",
+  "03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ":"03/Balance training station (for seniors)",
+  "03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง":"03/Outdoor dumbbell weight zone",
+  "04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน":"04/Climbing frame/Climbing wall",
+  "04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน":"04/Slide–Tower–Bridge play structure",
+  "04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย":"04/Safety swing set",
+  "04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย":"04/Mist/Spray water play feature",
+  "04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ":"04/Creative play zone (Sand/Nature-based)",
+  "05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน":"05/Park entrance/exit camera",
+  "05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์":"05/Sports field and grandstand camera",
+  "05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา":"05/Camera along running paths and blind spots",
+  "05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง":"05/Camera near ponds/high-risk areas",
+  "06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด":"06/Drinking water with bottle-filling station",
+  "06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น":"06/Wheelchair-accessible water dispenser",
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น":"06/Water/hand-washing point near playground",
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง":"06/Water point for pets",
+  "07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป":"07/General pathway lighting",
+  "07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา":"07/Sports field floodlights",
+  "07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้":"07/Ambient lighting (pond/wooden walkway)",
+  "07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ":"07/Smart solar lighting",
+  "08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง":"08/Open-air sun/rain pavilion",
+  "08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย":"08/Pergola with climbing plants",
+  "08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม":"08/Sheltered spectator seating",
+  "08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ":"08/Waiting/Meeting kiosk",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา":"09/Lockers for runners/athletes",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง":"09/Storage lockers for urban events",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้":"09/Lockers for loaner equipment",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน":"10/AED station (Park Center)",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา":"10/AED station (Sports Zone)",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล":"10/AED station (Near long-distance running track)",
+  "11 จุดทิ้งขยะ::ถังขยะแยกประเภท":"11/Recycling bins (Waste separation)",
+  "11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย":"11/Pathway waste bins (Sub-stations)",
+  "11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง":"11/Pet waste bins",
+  "12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน":"12/Park-wide emergency announcement system",
+  "12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม":"12/Speakers (Sports & Activity Zones)",
+  "12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน":"12/Ambient music speakers (Relaxation Zones)",
+  "12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน":"12/Bilingual Announcement/Park Information Points",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม":"13/Integrated Park Map Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม":"13/Post-mounted Directional Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง":"13/Running Track Distance Markers",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม":"13/Area/Facility Usage Rules Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ":"13/Pond-side Hazard Warning Signage",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง":"14/Shade-providing Tree Lines along Running Paths",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย":"14/Low Shrub Beds",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา":"14/Functional Lawn Areas with Shade",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา":"14/Lightweight Sunshade Structures",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ":"15/SOS Emergency Posts with Lights and Signals",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน":"15/Basic First Aid Stations",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ":"15/Zone Code/Park Coordinate Signage for Reporting Incidents",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ":"15/Guardrails and Non-slip Edges along Ponds",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ":"15/Staff Stations/Service Communication Booths",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack":"16/U-Rack Bicycle Parking",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ":"16/Organized Scooter/Micromobility Parking Zones",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม":"16/Bicycle Repair Stations with Air Pumps",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว":"16/Speed Calming Measures",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง":"17/Small, Gender-separated Restroom Units (Individual Stalls)",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง":"17/Medium-sized, Gender-separated Restrooms (2 Stalls per Gender)",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ":"17/Large Restroom Facilities with Showers",
+  "17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก":"17/Exterior Hand and Foot Washing Stations",
+  "18 คน::คน 01":"18/คน 01","18 คน::คน 02":"18/คน 02",
+  "18 คน::คน 03":"18/คน 03","18 คน::คน 04":"18/คน 04","18 คน::คน 05":"18/คน 05"
+};
+
+/* ═══════════════════════════════════════════════
+   CATALOG (English)
+═══════════════════════════════════════════════ */
+const CATALOG = [
+  {id:"01",name:"Chairs",thaiName:"เก้าอี้",color:"c1",emoji:"🪑",items:[
+    {name:"Low-profile outdoor bench",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/A/1.glb"},
+    {name:"Small-scale stadium/grandstand seating",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/B/1.glb"},
+    {name:"Chair with backrest and armrests",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/C/1.glb"},
+    {name:"Circular tree bench",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/D/1.glb"},
+    {name:"Recliner/Outdoor lounge chair",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/E/1.glb"},
+  ]},
+  {id:"02",name:"Tables",thaiName:"โต๊ะ",color:"c2",emoji:"🪵",items:[
+    {name:"Picnic table with benches",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Picnic%20table%20with%20benches/1.glb"},
+    {name:"Standing bar table/High table along running paths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Standing%20bar%20table%20High%20table%20along%20running%20paths/1.glb"},
+    {name:"Chess/Board game table",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Chess%20Board%20game%20table/1.glb"},
+    {name:"Outdoor workstation",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Outdoor%20workstation/1.glb"},
+  ]},
+  {id:"03",name:"Exercise Equipment",thaiName:"เครื่องออกกำลังกาย",color:"c3",emoji:"🏋️",items:[
+    {name:"Stretching/Cool-down station",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Stretching%20Cool-down%20station/1.glb"},
+    {name:"Bodyweight resistance training equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Bodyweight%20resistance%20training%20equipment/1.glb"},
+    {name:"Outdoor cardio equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Outdoor%20cardio%20equipment/1.glb"},
+    {name:"Balance training station (for seniors)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Balance%20training%20station%20for%20seniors/1.glb"},
+    {name:"Outdoor dumbbell weight zone",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Outdoor%20dumbbell%20weight%20zone/1.glb"},
+  ]},
+  {id:"04",name:"Playground Equipment",thaiName:"เครื่องเล่นเด็ก",color:"c4",emoji:"🛝",items:[
+    {name:"Climbing frame/Climbing wall",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Climbing%20frame%20Climbing%20wall/1.glb"},
+    {name:"Slide–Tower–Bridge play structure",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Slide-Tower-Bridge%20play%20structure/1.glb"},
+    {name:"Safety swing set",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Safety%20swing%20set/1.glb"},
+    {name:"Mist/Spray water play feature",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Mist%20Spray%20water%20play%20feature/1.glb"},
+    {name:"Creative play zone (Sand/Nature-based)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Creative%20play%20zone%20Sand%20Nature-based/1.glb"},
+  ]},
+  {id:"05",name:"CCTV Cameras",thaiName:"กล้องวงจรปิด",color:"c5",emoji:"📷",items:[
+    {name:"Park entrance/exit camera",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Park%20entrance%20exit%20camera/1.glb"},
+    {name:"Sports field and grandstand camera",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Sports%20field%20and%20grandstand%20camera/1.glb"},
+    {name:"Camera along running paths and blind spots",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Camera%20along%20running%20paths%20and%20blind%20spots/1.glb"},
+    {name:"Camera near ponds/high-risk areas",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Camera%20near%20ponds%20high-risk%20areas/1.glb"},
+  ]},
+  {id:"06",name:"Public Water Dispensers",thaiName:"ตู้กดน้ำสาธารณะ",color:"c6",emoji:"💧",items:[
+    {name:"Drinking water with bottle-filling station",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Drinking%20water%20with%20bottle-filling%20station/1.glb"},
+    {name:"Wheelchair-accessible water dispenser",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Wheelchair-accessible%20water%20dispenser/1.glb"},
+    {name:"Water/hand-washing point near playground",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Water%20hand-washing%20point%20near%20playground/1.glb"},
+    {name:"Water point for pets",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Water%20point%20for%20pets/1.glb"},
+  ]},
+  {id:"07",name:"Lighting",thaiName:"ไฟส่องสว่าง",color:"c7",emoji:"💡",items:[
+    {name:"General pathway lighting",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/General%20pathway%20lighting/1.glb"},
+    {name:"Sports field floodlights",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Sports%20field%20floodlights/1.glb"},
+    {name:"Ambient lighting (pond/wooden walkway)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Ambient%20lighting%20pond%20wooden%20walkway/1.glb"},
+    {name:"Smart solar lighting",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Smart%20solar%20lighting/1.glb"},
+  ]},
+  {id:"08",name:"Rain Shelters/Roof Structures",thaiName:"ที่หลบฝน/หลังคา",color:"c8",emoji:"⛺",items:[
+    {name:"Open-air sun/rain pavilion",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Open-air%20sun%20rain%20pavilion/1.glb"},
+    {name:"Pergola with climbing plants",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Pergola%20with%20climbing%20plants/1.glb"},
+    {name:"Sheltered spectator seating",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Sheltered%20spectator%20seating/1.glb"},
+    {name:"Waiting/Meeting kiosk",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Waiting%20Meeting%20kiosk/1.glb"},
+  ]},
+  {id:"09",name:"Public Lockers",thaiName:"ตู้ล็อคเกอร์สาธารณะ",color:"c9",emoji:"🔒",items:[
+    {name:"Lockers for runners/athletes",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Lockers%20for%20runners%20athletes/1.glb"},
+    {name:"Storage lockers for urban events",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Storage%20lockers%20for%20urban%20events/1.glb"},
+    {name:"Lockers for loaner equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Lockers%20for%20loaner%20equipment/1.glb"},
+  ]},
+  {id:"10",name:"AED Defibrillators",thaiName:"เครื่องกระตุกหัวใจ AED",color:"c10",emoji:"❤️‍🩹",items:[
+    {name:"AED station (Park Center)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Park%20Center/1.glb"},
+    {name:"AED station (Sports Zone)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Sports%20Zone/1.glb"},
+    {name:"AED station (Near long-distance running track)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Near%20long-distance%20running%20track/1.glb"},
+  ]},
+  {id:"11",name:"Waste Disposal Points",thaiName:"จุดทิ้งขยะ",color:"c11",emoji:"♻️",items:[
+    {name:"Recycling bins (Waste separation)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Recycling%20bins%20Waste%20separation/1.glb"},
+    {name:"Pathway waste bins (Sub-stations)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Pathway%20waste%20bins%20Sub-stations/1.glb"},
+    {name:"Pet waste bins",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Pet%20waste%20bins/1.glb"},
+  ]},
+  {id:"12",name:"Public Address Speakers",thaiName:"ลำโพงกระจายเสียง",color:"c12",emoji:"📢",items:[
+    {name:"Park-wide emergency announcement system",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Park-wide%20emergency%20announcement%20system/1.glb"},
+    {name:"Speakers (Sports & Activity Zones)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Park-wide%20emergency%20announcement%20system/1.glb"},
+    {name:"Ambient music speakers (Relaxation Zones)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Ambient%20music%20speakers%20Relaxation%20Zones/1.glb"},
+    {name:"Bilingual Announcement/Park Information Points",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Bilingual%20Announcement%20Park%20Information%20Points/1.glb"},
+  ]},
+  {id:"13",name:"Signage and Wayfinding",thaiName:"ป้ายและระบบ Wayfinding",color:"c13",emoji:"🗺️",items:[
+    {name:"Integrated Park Map Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Integrated%20Park%20Map%20Signage/Meshy_AI_a_Main_park_map_sign_0322013436_generate.glb"},
+    {name:"Post-mounted Directional Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Post-mounted%20Directional%20Signage/1.glb"},
+    {name:"Running Track Distance Markers",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Post-mounted%20Directional%20Signage/1.glb"},
+    {name:"Area/Facility Usage Rules Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Area%20Facility%20Usage%20Rules%20Signage/1.glb"},
+    {name:"Pond-side Hazard Warning Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Pond-side%20Hazard%20Warning%20Signage/1.glb"},
+  ]},
+  {id:"14",name:"Shade, Trees & Functional Landscape",thaiName:"ร่มเงา–ต้นไม้–ภูมิทัศน์",color:"c14",emoji:"🌳",items:[
+    {name:"Shade-providing Tree Lines along Running Paths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Shade-providing%20Tree%20Lines%20along%20Running%20Paths/1.glb"},
+    {name:"Low Shrub Beds",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Low%20Shrub%20Beds/1.glb"},
+    {name:"Functional Lawn Areas with Shade",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Functional%20Lawn%20Areas%20with%20Shade/1.glb"},
+    {name:"Lightweight Sunshade Structures",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Lightweight%20Sunshade%20Structures/1.glb"},
+  ]},
+  {id:"15",name:"Safety and Assistance",thaiName:"ความปลอดภัยและขอความช่วยเหลือ",color:"c15",emoji:"🆘",items:[
+    {name:"SOS Emergency Posts with Lights and Signals",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Guardrails%20and%20Non-slip%20Edges%20along%20Ponds/1.glb"},
+    {name:"Basic First Aid Stations",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Basic%20First%20Aid%20Stations/1.glb"},
+    {name:"Zone Code/Park Coordinate Signage for Reporting Incidents",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Zone%20Code%20Park%20Coordinate%20Signage%20for%20Reporting%20Incidents/1.glb"},
+    {name:"Guardrails and Non-slip Edges along Ponds",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Guardrails%20and%20Non-slip%20Edges%20along%20Ponds/1.glb"},
+    {name:"Staff Stations/Service Communication Booths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Staff%20Stations%20Service%20Communication%20Kiosks/1.glb"},
+  ]},
+  {id:"16",name:"Bicycle & Micromobility",thaiName:"การจัดการจักรยาน",color:"c16",emoji:"🚲",items:[
+    {name:"U-Rack Bicycle Parking",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/U-Rack%20Bicycle%20Parking/1.glb"},
+    {name:"Organized Scooter/Micromobility Parking Zones",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Organized%20Scooter%20Micromobility%20Parking%20Zones/1.glb"},
+    {name:"Bicycle Repair Stations with Air Pumps",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Bicycle%20Repair%20Stations%20with%20Air%20Pumps/1.glb"},
+    {name:"Speed Calming Measures",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Speed%20Calming%20Measures/1.glb"},
+  ]},
+  {id:"17",name:"Public Restrooms",thaiName:"ห้องน้ำสาธารณะ",color:"c17",emoji:"🚻",items:[
+    {name:"Small, Gender-separated Restroom Units (Individual Stalls)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Small%20Gender-separated%20Single-stall%20Restrooms/1.glb"},
+    {name:"Medium-sized, Gender-separated Restrooms (2 Stalls per Gender)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Medium-sized%20Gender-separated%20Restrooms%202%20Stalls%20per%20Gender/1.glb"},
+    {name:"Large Restroom Facilities with Showers",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Large%20Restroom%20Facilities%20with%20Showers/1.glb"},
+    {name:"Exterior Hand and Foot Washing Stations",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Exterior%20Hand%20and%20Foot%20Washing%20Stations/1.glb"},
+  ]},
+];
+const TOTAL_MODELS = CATALOG.reduce((s,c)=>s+c.items.length,0);
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let catCounts = new Map(), modelCounts = new Map(), coMatrix = new Map();
+let PARTICIPANTS = 0;
+let isLiveData = false;
+
+/* ═══════════════════════════════════════════════
+   LOAD FROM EMBEDDED JSON (SHEET1_JSON)
+═══════════════════════════════════════════════ */
+function loadEmbeddedJSON(json) {
+  catCounts = new Map(CATALOG.map(c=>[c.id,0]));
+  modelCounts = new Map();
+  coMatrix = new Map();
+  const perParticipantCats = new Map();
+
+  Object.entries(json).forEach(([key, count]) => {
+    if (!count || count <= 0) return;
+    const mk = THAI_TO_MK[key];
+    if (!mk) return;
+    const catId = mk.split("/")[0];
+    modelCounts.set(mk, (modelCounts.get(mk)||0) + count);
+    catCounts.set(catId, (catCounts.get(catId)||0) + count);
+    // build co-occurrence (treat each count as separate participants for simplicity)
+    for (let i = 0; i < count; i++) {
+      const pid = `E${catId}_${i}`;
+      if (!perParticipantCats.has(pid)) perParticipantCats.set(pid, new Set());
+      perParticipantCats.get(pid).add(catId);
+    }
+  });
+
+  // Build co-matrix from cat selections
+  const catList = [...catCounts.entries()].filter(([,v])=>v>0).map(([k])=>k);
+  for (let i=0;i<catList.length;i++) for(let j=i+1;j<catList.length;j++) {
+    const a=catList[i],b=catList[j];
+    const k=a<b?`${a}|${b}`:`${b}|${a}`;
+    const w = Math.min(catCounts.get(a)||0, catCounts.get(b)||0);
+    if (w>0) coMatrix.set(k,(coMatrix.get(k)||0)+w);
+  }
+
+  PARTICIPANTS = Object.values(json).reduce((s,v)=>s+(v||0),0);
+}
+
+/* ═══════════════════════════════════════════════
+   CSV PARSER
+═══════════════════════════════════════════════ */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const rows=[]; let row=[], f='', inQ=false, i=0;
+  while(i < text.length){
+    const ch = text[i];
+    if(inQ){
+      if(ch === '"'){
+        if(text[i+1] === '"'){ f+='"'; i+=2; continue; }   // "" -> literal "
+        inQ=false; i++; continue;
+      }
+      f+=ch; i++; continue;                                 // newlines/commas kept
+    }
+    if(ch === '"'){ inQ=true; i++; continue; }
+    if(ch === ','){ row.push(f); f=''; i++; continue; }
+    if(ch === '\r'){ i++; continue; }
+    if(ch === '\n'){ row.push(f); rows.push(row); row=[]; f=''; i++; continue; }
+    f+=ch; i++;
+  }
+  row.push(f); rows.push(row);
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+/* ═══════════════════════════════════════════════
+   FETCH SHEET 1 — real layout
+   Each submission row stores a JSON blob mapping
+   "NN ThaiCat::ThaiVariant" -> qty placed.
+   Column order is NOT trusted (header row is stale),
+   so the blob / image / timestamp are found by content.
+═══════════════════════════════════════════════ */
+let SUBMISSIONS = [];
+let UNMAPPED_KEYS = new Set();
+let EXTRA_PLACEMENTS = 0;
+
+function sheetEndpoints(id, tab){
+  const base = `https://docs.google.com/spreadsheets/d/${id}`;
+  const urls = [];
+  if(tab) urls.push(`${base}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+  urls.push(`${base}/gviz/tq?tqx=out:csv`);
+  urls.push(`${base}/export?format=csv`);
+  return urls;
+}
+
+async function fetchCSVText(urls){
+  let lastErr = null;
+  for(const u of urls){
+    try{
+      const sep = u.includes('?') ? '&' : '?';
+      const resp = await fetch(`${u}${sep}_cb=${Date.now()}`, { cache:'no-store' });
+      if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      if(/^\s*</.test(text)) throw new Error('received HTML — sheet may not be shared publicly');
+      if(text.trim()) return text;
+      throw new Error('empty response');
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error('all endpoints failed');
+}
+
+/* A cell is a selections blob if it parses as an object with "::" keys */
+function extractSelections(cell){
+  if(!cell) return null;
+  const t = cell.trim();
+  if(t.length < 2 || t[0] !== '{') return null;
+  let obj;
+  try{ obj = JSON.parse(t); }catch(e){ return null; }
+  if(!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+  if(!Object.keys(obj).some(k => k.includes('::'))) return null;
+  return obj;
+}
+
+const IMG_RE = /^https?:\/\/\S+\.(?:png|jpe?g|webp|gif)(?:\?|#|$)/i;
+const TS_RE  = /\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}/;
+
+function parseSubmissionRows(rows){
+  const subs = [];
+  rows.forEach(r => {
+    let sel = null;
+    for(const c of r){ const got = extractSelections(c); if(got){ sel = got; break; } }
+    if(!sel) return;                                  // header/blank/other rows skipped
+    const img = (r.find(c => IMG_RE.test((c||'').trim())) || '').trim();
+    const ts  = (r.find(c => { const v=(c||'').trim(); return v && v!==img && TS_RE.test(v); }) || '').trim();
+    subs.push({ sel, img, ts });
+  });
+  return subs;
+}
+
+/* Models that actually have a card in CATALOG. Keys present in the sheet but
+   absent here (e.g. the "18 คน" figures) are counted separately so the
+   "models selected X/Y" KPI can never exceed its own denominator. */
+const VALID_MK = new Set(CATALOG.flatMap(c => c.items.map(it => `${c.id}/${it.name}`)));
+
+function aggregateSubmissions(subs){
+  const mCounts = new Map();
+  const cCounts = new Map(CATALOG.map(c => [c.id, 0]));
+  const co = new Map();
+  let placements = 0;
+  EXTRA_PLACEMENTS = 0;
+  UNMAPPED_KEYS = new Set();
+
+  subs.forEach(sub => {
+    const cats = new Set();
+    for(const [key, raw] of Object.entries(sub.sel)){
+      const qty = Number(raw) || 0;
+      if(qty <= 0) continue;
+      const mk = THAI_TO_MK[key];
+      if(!mk){ UNMAPPED_KEYS.add(key); continue; }
+      if(!VALID_MK.has(mk)){ EXTRA_PLACEMENTS += qty; continue; }  // no card to show
+      const catId = mk.split('/')[0];
+      mCounts.set(mk, (mCounts.get(mk)||0) + qty);
+      cCounts.set(catId, (cCounts.get(catId)||0) + qty);
+      cats.add(catId);
+      placements += qty;
+    }
+    const arr = [...cats];
+    for(let i=0;i<arr.length;i++) for(let j=i+1;j<arr.length;j++){
+      const a=arr[i], b=arr[j], k = a<b ? `${a}|${b}` : `${b}|${a}`;
+      co.set(k, (co.get(k)||0) + 1);                  // real per-submission co-occurrence
+    }
+  });
+  return { mCounts, cCounts, co, placements };
+}
+
+async function fetchSheet1(){
+  try{
+    const text = await fetchCSVText(sheetEndpoints(SHEET1_ID, SHEET1_TAB));
+    const rows = parseCSV(text);
+    const subs = parseSubmissionRows(rows);
+    if(subs.length === 0) throw new Error('no submission rows found');
+
+    const { mCounts, cCounts, co, placements } = aggregateSubmissions(subs);
+
+    SUBMISSIONS  = subs;
+    modelCounts  = mCounts;
+    catCounts    = cCounts;
+    coMatrix     = co;
+    PARTICIPANTS = subs.length;      // 1 row = 1 submission
+    isLiveData   = true;
+
+    updateDataBadge(true, PARTICIPANTS);
+    renderSubmissions();
+    if(UNMAPPED_KEYS.size) console.warn('Sheet keys with no THAI_TO_MK mapping:', [...UNMAPPED_KEYS]);
+    if(EXTRA_PLACEMENTS) console.info(`${EXTRA_PLACEMENTS} placements have no CATALOG card (e.g. "18 คน") — excluded from KPIs`);
+    console.log(`Sheet1 live: ${subs.length} submissions, ${placements} placements`);
+    return true;
+  }catch(e){
+    console.warn('Sheet1 fetch failed:', e.message);
+    isLiveData = false;
+    loadEmbeddedJSON(SHEET1_JSON);   // fall back to the snapshot
+    updateDataBadge(false, PARTICIPANTS, e.message);
+    renderSubmissions();
+    return false;
+  }
+}
+
+/* Thumbnail strip of submission screenshots (column with the .png URL) */
+function renderSubmissions(){
+  const wrap = document.getElementById('subsWrap');
+  const strip = document.getElementById('subsStrip');
+  if(!wrap || !strip) return;
+  if(!SUBMISSIONS.length){ wrap.style.display='none'; return; }
+  const withImg = SUBMISSIONS.filter(s => s.img);
+  if(!withImg.length){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  strip.innerHTML = withImg.map((s,i) => {
+    const qty = Object.values(s.sel).reduce((a,b)=>a+(Number(b)||0),0);
+    const ts  = (s.ts||'').replace(/</g,'&lt;');
+    return `<a class="sub-card" href="${s.img}" target="_blank" rel="noopener">
+      <img loading="lazy" src="${s.img}" alt="submission ${i+1}">
+      <div class="sub-meta"><b>#${i+1}</b><span>${ts||'—'}</span><span>${qty} ชิ้น</span></div>
+    </a>`;
+  }).join('');
+}
+
+function updateDataBadge(live, count, reason){
+  const b = document.getElementById('dataModeBadge');
+  if(live){
+    b.className='data-badge live';
+    b.textContent=`● ข้อมูลจริง · ${count} การส่ง`;
+    b.title='Loaded live from Google Sheets';
+  } else {
+    b.className='data-badge mock';
+    b.textContent='◌ ข้อมูล Snapshot';
+    b.title = reason ? `Live load failed: ${reason}` : 'Using embedded snapshot';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   FETCH SHEET 2 — COLUMN E ONLY (index 4)
+═══════════════════════════════════════════════ */
+async function fetchSheet2() {
+  const listEl = document.getElementById('suggList');
+  try {
+    const text = await fetchCSVText(sheetEndpoints(SHEET2_ID, null));
+    const rows = parseCSV(text);
+    if(rows.length<1) throw new Error('empty');
+
+    const allRows = rows.length;
+    // Column E = index 4
+    const headerE = rows[0][4] ? rows[0][4].trim() : 'Column E';
+    const dataRows = rows.slice(1).filter(r=>r.some(c=>c.trim()));
+    const colEValues = dataRows.map((r,i)=>({
+      idx: i+1,
+      text: (r[4]||'').trim()
+    }));
+    const nonEmpty = colEValues.filter(v=>v.text.length>0);
+
+    // Update stats
+    document.getElementById('suggCount').textContent = colEValues.length;
+    document.getElementById('suggNonEmpty').textContent = nonEmpty.length;
+    document.getElementById('suggTotal').textContent = allRows;
+
+    document.getElementById('suggDataBadge').className='data-badge live';
+    document.getElementById('suggDataBadge').textContent=`● Column E: "${headerE}"`;
+
+    listEl.innerHTML='';
+    if(nonEmpty.length===0){
+      listEl.innerHTML=`<div style="text-align:center;padding:50px;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:10px;">💬</div>
+        <div>Column E ยังไม่มีข้อความ</div>
+        <div style="font-size:10px;margin-top:5px;">Header: "${headerE}"</div>
+      </div>`;
+      return;
+    }
+
+    // Header label
+    const hdr = document.createElement('div');
+    hdr.style.cssText='grid-column:1/-1;padding:8px 12px;background:var(--lav2);border-radius:var(--rads);font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;';
+    hdr.textContent = `📋 หัวคอลัมน์: "${headerE}" · แสดง ${nonEmpty.length} รายการ`;
+    listEl.appendChild(hdr);
+
+    const colors=['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'];
+    nonEmpty.forEach((item,i)=>{
+      const card = document.createElement('div'); card.className='sugg-card';
+      const cls = colors[i%colors.length];
+      card.innerHTML=`
+        <div class="sc-top">
+          <div class="sc-avatar cbadge ${cls}">${i+1}</div>
+          <div><div class="sc-num">แถวที่ ${item.idx} · Column E</div></div>
+        </div>
+        <div class="sc-text">${item.text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
+      listEl.appendChild(card);
+    });
+
+  } catch(e) {
+    console.warn('Sheet2 fetch failed:', e.message);
+    document.getElementById('suggDataBadge').className='data-badge mock';
+    document.getElementById('suggDataBadge').textContent='◌ ไม่สามารถโหลดได้';
+    listEl.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+      <div style="margin-bottom:12px;">กรุณาเปิด Spreadsheet และแชร์แบบ "ทุกคนที่มีลิงก์"</div>
+      <a href="https://docs.google.com/spreadsheets/d/${SHEET2_ID}/edit?usp=sharing" target="_blank" class="sheet-link" style="margin:auto;">📊 เปิด Google Sheets</a>
+    </div>`;
+    document.getElementById('suggCount').textContent='—';
+    document.getElementById('suggNonEmpty').textContent='—';
+    document.getElementById('suggTotal').textContent='—';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LAZY LOAD
+═══════════════════════════════════════════════ */
+const mvObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const mv=e.target;
+    if(mv.dataset.src&&!mv.getAttribute('src'))mv.setAttribute('src',mv.dataset.src);
+    mvObs.unobserve(mv);
+  });
+},{rootMargin:'250px'});
+
+/* ═══════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════ */
+function buildNav(q=''){
+  const el=document.getElementById('navList');el.innerHTML='';
+  const f=q.trim().toLowerCase();
+  const max=Math.max(...CATALOG.map(c=>catCounts.get(c.id)||0),1);
+  CATALOG.forEach(cat=>{
+    if(f&&!cat.name.toLowerCase().includes(f)&&!cat.thaiName.toLowerCase().includes(f)&&!cat.id.includes(f))return;
+    const cnt=catCounts.get(cat.id)||0;
+    const pct=Math.round(cnt/max*100);
+    const li=document.createElement('li');
+    li.innerHTML=`<a href="#cat-${cat.id}" style="display:flex;flex-direction:column;gap:3px;padding:7px 9px;border-radius:9px;border:1px solid transparent;text-decoration:none;color:inherit;transition:all .14s;">
+      <div class="nr"><span>${cat.emoji} ${cat.id} · ${cat.name}</span><span class="pill">${cnt}</span></div>
+      <div class="nbar"><div class="nbarf" style="width:${pct}%"></div></div>
+    </a>`;
+    const a=li.querySelector('a');
+    a.addEventListener('mouseover',()=>{a.style.background='white';a.style.borderColor='var(--border)';});
+    a.addEventListener('mouseout',()=>{a.style.background='';a.style.borderColor='transparent';});
+    el.appendChild(li);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   CATALOG VIEW
+═══════════════════════════════════════════════ */
+function buildCatalog(q=''){
+  const wrap=document.getElementById('catalogWrap');wrap.innerHTML='';
+  const f=q.trim().toLowerCase();
+  CATALOG.forEach(cat=>{
+    if(f&&!cat.name.toLowerCase().includes(f)&&!cat.thaiName.toLowerCase().includes(f)&&!cat.id.includes(f))return;
+    const maxM=Math.max(...cat.items.map(it=>modelCounts.get(`${cat.id}/${it.name}`)||0),1);
+    const totalCat=catCounts.get(cat.id)||0;
+    const sec=document.createElement('section');sec.className='panel';sec.id=`cat-${cat.id}`;
+    const hd=document.createElement('div');hd.className='panel-hd';
+    hd.innerHTML=`
+      <div class="panel-hd-l">
+        <div class="cbadge ${cat.color}">${cat.emoji}</div>
+        <div><strong>${cat.id} · ${cat.name}</strong>
+          <div style="font-size:9.5px;color:var(--muted);margin-top:1px;">${cat.thaiName} · ${cat.items.length} รูปแบบ</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-size:10.5px;color:var(--muted)">นับจาก Sheet</span>
+        <span class="pill" style="font-size:13px;font-weight:900;">${totalCat}</span>
+      </div>`;
+    sec.appendChild(hd);
+    const bd=document.createElement('div');bd.className='panel-body';
+    const grid=document.createElement('div');grid.className='grid';
+    cat.items.forEach(item=>{
+      const mk=`${cat.id}/${item.name}`;
+      const cnt=modelCounts.get(mk)||0;
+      const pct=Math.round(cnt/maxM*100);
+      const shortPath=item.url.replace('https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/','');
+      const card=document.createElement('div');card.className='card';
+      if(cnt>0) card.style.borderColor='var(--lav)';
+      card.innerHTML=`
+        <div class="thumb">
+          <div class="mv-sk"><div class="spin"></div><span>กำลังโหลด…</span></div>
+          <model-viewer data-src="${item.url}" camera-controls auto-rotate rotation-per-second="18deg"
+            shadow-intensity="0.6" exposure="1.1" alt="${item.name}"
+            style="opacity:0;transition:opacity .4s;width:100%;height:100%;display:block;background:transparent;">
+          </model-viewer>
+          <div class="fallback"><span class="fi">📦</span><span class="ft">ยังไม่มีโมเดล</span><span class="fu">${decodeURIComponent(shortPath)}</span></div>
+        </div>
+        <div class="card-body">
+          <div class="card-name">${item.name}</div>
+          <div class="urow"><span>🗳️ นับจาก Sheet</span><b style="${cnt>0?'color:#7c3aed':''}">${cnt}</b></div>
+          <div class="ubar"><div class="ubarf" style="width:${pct}%"></div></div>
+          <div class="spacer"></div>
+        </div>`;
+      const mv=card.querySelector('model-viewer');
+      const sk=card.querySelector('.mv-sk');
+      const fb=card.querySelector('.fallback');
+      mv.addEventListener('load',()=>{mv.style.opacity='1';sk.style.display='none';});
+      mv.addEventListener('error',()=>{mv.style.display='none';sk.style.display='none';fb.style.display='flex';});
+      mvObs.observe(mv);
+      grid.appendChild(card);
+    });
+    bd.appendChild(grid);sec.appendChild(bd);wrap.appendChild(sec);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD — with full model count table
+═══════════════════════════════════════════════ */
+function buildDash(){
+  const wrap=document.getElementById('dashWrap');wrap.innerHTML='';
+  const totalSel=[...modelCounts.values()].reduce((s,v)=>s+v,0);
+  const uniqueSelected=[...modelCounts.values()].filter(v=>v>0).length;
+  const activeCats=CATALOG.filter(c=>(catCounts.get(c.id)||0)>0).length;
+  const topCatEntry=CATALOG.reduce((a,b)=>(catCounts.get(a.id)||0)>=(catCounts.get(b.id)||0)?a:b);
+  const allMK=[...modelCounts.entries()].sort((a,b)=>b[1]-a[1]);
+  const topMK=allMK[0]||['—',0];
+
+  // KPI row 1
+  const kr1=document.createElement('div');
+  kr1.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;';
+  [
+    ['🗳️ การเลือกรวม',totalSel,'ครั้ง (จาก Sheet)','linear-gradient(135deg,#a78bfa,#c4b5fd)'],
+    ['👥 ผู้เข้าร่วม',PARTICIPANTS,'แถวใน Sheet 1','linear-gradient(135deg,#38bdf8,#7dd3fc)'],
+    ['🧩 โมเดลที่ถูกเลือก',uniqueSelected,`จาก ${TOTAL_MODELS} รูปแบบ`,'linear-gradient(135deg,#f59e0b,#fcd34d)'],
+    ['📁 หมวดที่มีการเลือก',activeCats,`จาก ${CATALOG.length} หมวด`,'linear-gradient(135deg,#6366f1,#818cf8)'],
+  ].forEach(([lbl,val,unit,bg])=>{
+    const d=document.createElement('div');
+    d.style.cssText=`border-radius:var(--rad);padding:16px;box-shadow:var(--sh);background:${bg};color:white;`;
+    d.innerHTML=`<div style="font-size:11px;opacity:.85;margin-bottom:5px;">${lbl}</div>
+      <div style="font-size:22px;font-weight:900;line-height:1.1;">${val}</div>
+      <div style="font-size:10px;opacity:.7;margin-top:2px;">${unit}</div>`;
+    kr1.appendChild(d);
+  });
+  wrap.appendChild(kr1);
+
+  // KPI row 2
+  const kr2=document.createElement('div');
+  kr2.style.cssText='display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;';
+  [
+    ['🏆 หมวดยอดนิยม',`${topCatEntry.emoji} ${topCatEntry.thaiName}`,`${catCounts.get(topCatEntry.id)||0} ครั้ง`,'linear-gradient(135deg,#f472b6,#f9a8d4)'],
+    ['⭐ โมเดลยอดนิยม',topMK[0].split('/').slice(1).join(' '),`${topMK[1]} ครั้ง`,'linear-gradient(135deg,#34d399,#6ee7b7)'],
+  ].forEach(([lbl,val,unit,bg])=>{
+    const d=document.createElement('div');
+    d.style.cssText=`border-radius:var(--rad);padding:16px;box-shadow:var(--sh);background:${bg};color:white;`;
+    d.innerHTML=`<div style="font-size:11px;opacity:.85;margin-bottom:5px;">${lbl}</div>
+      <div style="font-size:17px;font-weight:900;line-height:1.2;">${val}</div>
+      <div style="font-size:10px;opacity:.7;margin-top:2px;">${unit}</div>`;
+    kr2.appendChild(d);
+  });
+  wrap.appendChild(kr2);
+
+  // Category bar chart
+  const bp=document.createElement('div');bp.className='panel';bp.style.marginBottom='14px';
+  const maxCat=Math.max(...CATALOG.map(c=>catCounts.get(c.id)||0),1);
+  let brows=`<div class="panel-hd"><strong>📊 จำนวนเลือกแต่ละหมวดหมู่</strong>
+    <span class="pill">${isLiveData?'ข้อมูลจาก Sheet 1':'Snapshot'}</span></div>
+    <div class="panel-body" style="display:flex;flex-direction:column;gap:6px;">`;
+  CATALOG.forEach(cat=>{
+    const cnt=catCounts.get(cat.id)||0;const pct=Math.round(cnt/maxCat*100);
+    brows+=`<div style="display:grid;grid-template-columns:28px 180px 1fr 40px;align-items:center;gap:8px;">
+      <span style="font-size:14px;text-align:center;">${cat.emoji}</span>
+      <span style="font-size:10.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cat.id} ${cat.thaiName}</span>
+      <div style="height:14px;background:var(--lav2);border-radius:99px;overflow:hidden;position:relative;">
+        <div style="position:absolute;left:0;top:0;height:100%;width:${pct}%;border-radius:99px;background:${cnt>0?'linear-gradient(90deg,var(--lav),var(--pink))':'var(--lav2)'};transition:width .4s;"></div>
+      </div>
+      <span style="font-size:13px;font-weight:900;text-align:right;color:${cnt>0?'#7c3aed':'var(--muted)'};">${cnt}</span>
+    </div>`;
+  });
+  brows+='</div>';bp.innerHTML=brows;wrap.appendChild(bp);
+
+  // ── FULL MODEL COUNT TABLE ──
+  const tp=document.createElement('div');tp.className='panel';
+  tp.innerHTML=`<div class="panel-hd">
+    <strong>🧩 โมเดลทั้งหมดที่เลือกไว้ใน Sheet 1</strong>
+    <span class="pill">${uniqueSelected} จาก ${TOTAL_MODELS} รูปแบบ</span>
+  </div>`;
+
+  const tbWrap=document.createElement('div');tbWrap.style.cssText='overflow-x:auto;';
+  const maxModel=Math.max(...[...modelCounts.values()],1);
+  let thtml=`<table class="model-count-table">
+    <thead><tr>
+      <th>หมวด</th><th>ชื่อโมเดล (EN)</th><th>ชื่อโมเดล (TH)</th><th style="text-align:center">จำนวน</th><th style="min-width:120px">สัดส่วน</th>
+    </tr></thead><tbody>`;
+
+  // Build TH model name lookup from THAI_TO_MK (reverse)
+  const mkToThai = new Map();
+  Object.entries(THAI_TO_MK).forEach(([thaiKey, mk])=>{
+    const thaiModel = thaiKey.split('::')[1]||'';
+    mkToThai.set(mk, thaiModel);
+  });
+
+  // Sort: selected first, then alphabetical by cat
+  const allEntries = [];
+  CATALOG.forEach(cat=>{
+    cat.items.forEach(item=>{
+      const mk=`${cat.id}/${item.name}`;
+      const cnt=modelCounts.get(mk)||0;
+      allEntries.push({cat,item,mk,cnt});
+    });
+  });
+  allEntries.sort((a,b)=>b.cnt-a.cnt||a.cat.id.localeCompare(b.cat.id));
+
+  allEntries.forEach(({cat,item,mk,cnt})=>{
+    const pct=Math.round(cnt/maxModel*100);
+    const thaiName=mkToThai.get(mk)||'—';
+    const isSelected=cnt>0;
+    thtml+=`<tr class="${isSelected?'selected':''}">
+      <td><div style="display:flex;align-items:center;gap:5px;">
+        <div class="cbadge ${cat.color}" style="width:22px;height:22px;font-size:10px;border-radius:5px;flex-shrink:0;">${cat.emoji}</div>
+        <span style="font-size:10px;color:var(--muted);white-space:nowrap;">${cat.id}</span>
+      </div></td>
+      <td style="font-size:11px;font-weight:${isSelected?700:400};max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.name}">${item.name}</td>
+      <td style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${thaiName}">${thaiName}</td>
+      <td style="text-align:center;"><span class="cnt-badge ${isSelected?'has-count':''}">${cnt}</span></td>
+      <td><div class="mct-bar"><div class="mct-barf" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  });
+  thtml+='</tbody></table>';
+  tbWrap.innerHTML=thtml;tp.appendChild(tbWrap);wrap.appendChild(tp);
+}
+
+/* ═══════════════════════════════════════════════
+   NETWORK
+═══════════════════════════════════════════════ */
+const netCanvas=document.getElementById('netCanvas');
+const tip=document.getElementById('tip');
+let net={nodes:[],edges:[]};
+function buildNet(){
+  const max=Math.max(...CATALOG.map(c=>catCounts.get(c.id)||0),1);
+  net.nodes=CATALOG.map((cat,i)=>{
+    const a=(i/CATALOG.length)*Math.PI*2;const v=catCounts.get(cat.id)||0;
+    return{id:cat.id,label:`${cat.emoji} ${cat.name}`,value:v,r:5+16*(v/max),a,x:0,y:0};
+  });
+  const edges=[];
+  for(const[k,v] of coMatrix.entries()){const[a,b]=k.split('|');edges.push({a,b,w:v});}
+  edges.sort((e1,e2)=>e2.w-e1.w);net.edges=edges.slice(0,70);
+}
+function resizeCv(){const dpr=Math.max(1,devicePixelRatio||1);const r=netCanvas.getBoundingClientRect();netCanvas.width=Math.floor(r.width*dpr);netCanvas.height=Math.floor(r.height*dpr);}
+function drawNet(){
+  const ctx=netCanvas.getContext('2d');const dpr=Math.max(1,devicePixelRatio||1);
+  const w=netCanvas.width/dpr,h=netCanvas.height/dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2,R=Math.min(w,h)*0.36;
+  net.nodes.forEach(n=>{n.x=cx+Math.cos(n.a)*R;n.y=cy+Math.sin(n.a)*R;});
+  const maxW=Math.max(...net.edges.map(e=>e.w),1);
+  net.edges.forEach(e=>{
+    const na=net.nodes.find(n=>n.id===e.a),nb=net.nodes.find(n=>n.id===e.b);
+    if(!na||!nb)return;
+    ctx.beginPath();ctx.strokeStyle=`rgba(196,181,253,${0.1+0.5*(e.w/maxW)})`;ctx.lineWidth=0.7+1.8*(e.w/maxW);
+    const mx=(na.x+nb.x)/2,my=(na.y+nb.y)/2,dx=mx-cx,dy=my-cy;
+    ctx.moveTo(na.x,na.y);ctx.quadraticCurveTo(mx+dx*.2,my+dy*.2,nb.x,nb.y);ctx.stroke();
+  });
+  net.nodes.forEach(n=>{
+    const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+    g.addColorStop(0,'rgba(196,181,253,.75)');g.addColorStop(1,'rgba(249,168,212,.4)');
+    ctx.beginPath();ctx.fillStyle=g;ctx.strokeStyle='rgba(139,92,246,.45)';ctx.lineWidth=1.5;
+    ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(45,37,70,.8)';ctx.font='600 10px system-ui,sans-serif';
+    const left=Math.cos(n.a)>=0;
+    ctx.textAlign=left?'left':'right';ctx.textBaseline='middle';
+    ctx.fillText(n.label,n.x+(left?n.r+5:-(n.r+5)),n.y);
+  });
+  ctx.fillStyle='rgba(45,37,70,.65)';ctx.font='700 12px system-ui,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🔗 เครือข่ายการเลือกหมวดหมู่ร่วมกัน',cx,cy);
+}
+netCanvas.addEventListener('mousemove',ev=>{
+  const r=netCanvas.getBoundingClientRect();
+  const n=(() => { for(const nd of net.nodes){const dx=ev.clientX-r.left-nd.x,dy=ev.clientY-r.top-nd.y;if(Math.sqrt(dx*dx+dy*dy)<=nd.r+2)return nd;} return null; })();
+  if(!n){tip.style.display='none';return;}
+  tip.style.display='block';tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';
+  tip.innerHTML=`<b>${n.label}</b><br/>เลือก: <b>${n.value}</b>`;
+});
+netCanvas.addEventListener('mouseleave',()=>tip.style.display='none');
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+const catalogWrap=document.getElementById('catalogWrap');
+const dashWrap=document.getElementById('dashWrap');
+const networkWrap=document.getElementById('networkWrap');
+const suggWrap=document.getElementById('suggWrap');
+function setTab(name){
+  ['Catalog','Dash','Net','Sugg'].forEach(t=>document.getElementById('tab'+t).classList.remove('active'));
+  document.getElementById('tab'+name).classList.add('active');
+  catalogWrap.style.display='none';dashWrap.style.display='none';networkWrap.style.display='none';suggWrap.style.display='none';
+}
+function showCatalog(){setTab('Catalog');catalogWrap.style.display='';}
+function showDash(){setTab('Dash');dashWrap.style.display='';buildDash();}
+function showNet(){setTab('Net');networkWrap.style.display='block';buildNet();resizeCv();drawNet();}
+function showSugg(){setTab('Sugg');suggWrap.style.display='block';fetchSheet2();}
+document.getElementById('tabCatalog').addEventListener('click',showCatalog);
+document.getElementById('tabDash').addEventListener('click',showDash);
+document.getElementById('tabNet').addEventListener('click',showNet);
+document.getElementById('tabSugg').addEventListener('click',showSugg);
+
+/* ═══════════════════════════════════════════════
+   EXPORT CSV
+═══════════════════════════════════════════════ */
+function exportCSV(){
+  const mkToThai=new Map();
+  Object.entries(THAI_TO_MK).forEach(([k,mk])=>mkToThai.set(mk,k));
+  const rows=[['mk','catId','catName_EN','catName_TH','item_EN','item_TH','count']];
+  CATALOG.forEach(cat=>{
+    cat.items.forEach(item=>{
+      const mk=`${cat.id}/${item.name}`;
+      const cnt=modelCounts.get(mk)||0;
+      const thaiKey=mkToThai.get(mk)||'';
+      const thaiItem=thaiKey.split('::')[1]||'';
+      rows.push([mk,cat.id,cat.name,cat.thaiName,item.name,thaiItem,String(cnt)]);
+    });
+  });
+  const esc=s=>`"${String(s).replaceAll('"','""')}"`;
+  const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),download:'model_pravet_counts.csv'});
+  document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ═══════════════════════════════════════════════
+   REFRESH UI
+═══════════════════════════════════════════════ */
+function refreshAll(q=''){
+  const total=[...modelCounts.values()].reduce((s,v)=>s+v,0);
+  const uniqueSel=[...modelCounts.values()].filter(v=>v>0).length;
+  const activeCats=CATALOG.filter(c=>(catCounts.get(c.id)||0)>0).length;
+  document.getElementById('kpiP').textContent=PARTICIPANTS;
+  document.getElementById('kpiS').textContent=total;
+  document.getElementById('kpiSelected').textContent=`${uniqueSel}/${TOTAL_MODELS}`;
+  document.getElementById('kpiCats').textContent=`${activeCats}/${CATALOG.length}`;
+  document.getElementById('brandSub').textContent=`Model_Pravet · ${PARTICIPANTS} ${isLiveData?'การส่ง':'แถว (snapshot)'}`;
+  buildNav(q);buildCatalog(q);
+  if(dashWrap.style.display!=='none')buildDash();
+  if(networkWrap.style.display!=='none'){buildNet();resizeCv();drawNet();}
+}
+
+document.getElementById('btnCSV').addEventListener('click',exportCSV);
+document.getElementById('searchInput').addEventListener('input',e=>refreshAll(e.target.value));
+window.addEventListener('resize',()=>{if(networkWrap.style.display!=='none'){resizeCv();drawNet();}});
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+async function loadLive(){
+  const badge = document.getElementById('dataModeBadge');
+  badge.className='data-badge mock'; badge.textContent='◌ กำลังโหลด…';
+  const btn = document.getElementById('btnReload');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังโหลด…'; }
+  await fetchSheet1();
+  const q = document.getElementById('searchInput').value || '';
+  refreshAll(q);
+  const c = document.getElementById('subsCount');
+  if(c) c.textContent = SUBMISSIONS.length ? `· ${SUBMISSIONS.length} รายการ` : '';
+  if(btn){ btn.disabled=false; btn.textContent='🔄 โหลดข้อมูลใหม่'; }
+}
+
+document.getElementById('btnReload').addEventListener('click', loadLive);
+
+(async()=>{
+  // 1. Snapshot first so the page is never empty
+  loadEmbeddedJSON(SHEET1_JSON);
+  refreshAll('');
+  showCatalog();
+  updateDataBadge(false, PARTICIPANTS);
+  // 2. Then overwrite with live sheet data
+  await loadLive();
+})();
+</script>
+</body>
+</html>

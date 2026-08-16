@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pravet Park — Street Furniture Field Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════
+   PLATE SYSTEM — survey-poster typography & rules
+   ══════════════════════════════════════════════════════ */
+:root{
+  --paper:#e4e1dc;
+  --plate:#f4f2ee;
+  --plate-2:#eceae5;
+  --red:#ee2e17;
+  --red-deep:#b81f0b;
+  --coral:#fa9585;
+  --coral-2:#fbb8ab;
+  --coral-3:#fcd7cf;
+  --ink:#1a1715;
+  --ink-2:#78716b;
+  --rule:rgba(238,46,23,.30);
+  --rule-soft:rgba(26,23,21,.13);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);color:var(--ink);background:var(--paper);
+  background-image:radial-gradient(rgba(26,23,21,.10) .9px,transparent .9px);
+  background-size:22px 22px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--red);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--plate-2)}
+::-webkit-scrollbar-thumb{background:var(--coral);border:2px solid var(--plate-2)}
+::-webkit-scrollbar-thumb:hover{background:var(--red)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* ── shared micro-type ───────────────────────────────── */
+.mono{font-family:var(--mono)}
+.eyebrow{
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.20em;
+  text-transform:uppercase;color:var(--ink-2);
+}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* hatch fills — the survey's data language */
+.hx-a{background-image:repeating-linear-gradient(45deg,var(--coral-2) 0 1.5px,transparent 1.5px 5px)}
+.hx-b{background-image:repeating-linear-gradient(-45deg,var(--coral-2) 0 1.5px,transparent 1.5px 5px)}
+.hx-c{background-image:repeating-linear-gradient(90deg,var(--coral-2) 0 1.5px,transparent 1.5px 6px)}
+.hx-d{background-image:radial-gradient(var(--coral-2) 1px,transparent 1.2px);background-size:6px 6px}
+
+/* ══════════════════════════════════════════════════════
+   PLATE FRAME
+   ══════════════════════════════════════════════════════ */
+.shell{padding:20px;max-width:1680px;margin:0 auto}
+.plate{
+  border:9px solid var(--red);background:var(--plate);
+  box-shadow:0 24px 60px rgba(26,23,21,.14);
+}
+.app{display:grid;grid-template-columns:286px 1fr;align-items:start}
+
+/* ══════════════════════════════════════════════════════
+   INDEX RAIL (left)
+   ══════════════════════════════════════════════════════ */
+.rail{
+  position:sticky;top:0;max-height:100vh;overflow-y:auto;
+  border-right:1px solid var(--rule);background:var(--plate);
+  padding:22px 0 30px;
+}
+.rail-block{padding:0 20px}
+.mark{display:flex;align-items:flex-start;gap:11px;margin-bottom:20px}
+.mark-bar{width:6px;height:44px;background:var(--red);flex:none;margin-top:2px}
+.mark h1{font-size:17px;font-weight:900;line-height:1.02;letter-spacing:-.025em;text-transform:uppercase}
+.mark h1 em{font-style:normal;color:var(--red);display:block}
+.mark small{display:block;margin-top:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;color:var(--ink-2);text-transform:uppercase}
+
+.readout{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr}
+.ro{padding:11px 20px;border-right:1px dotted var(--rule);border-bottom:1px dotted var(--rule)}
+.ro:nth-child(2n){border-right:0}
+.ro:nth-child(n+3){border-bottom:0}
+.ro .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.ro .v{font-size:27px;font-weight:800;letter-spacing:-.045em;line-height:1.1;margin-top:1px;font-variant-numeric:tabular-nums}
+.ro .v small{font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:0}
+
+.find{margin:16px 20px 6px;display:flex;align-items:center;gap:8px;border:1px solid var(--ink);background:transparent;padding:8px 10px}
+.find:focus-within{border-color:var(--red);box-shadow:3px 3px 0 var(--coral-3)}
+.find span{font-family:var(--mono);font-size:11px;color:var(--red)}
+.find input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+.find input::placeholder{color:var(--ink-2)}
+
+.idx-hd{display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px 7px}
+.idx{list-style:none;padding:0 20px}
+.idx a{
+  display:block;text-decoration:none;padding:7px 0;border-bottom:1px dotted var(--rule);
+  transition:background .14s,padding .14s;
+}
+.idx a:hover{background:var(--coral-3);padding-left:6px;padding-right:6px}
+.idx a.on{background:var(--coral-3)}
+.ir{display:flex;align-items:baseline;gap:8px}
+.ir .n{font-family:var(--mono);font-size:10px;color:var(--red);font-weight:600;flex:none}
+.ir .t{font-size:11.5px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.ir .lead{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-3px);min-width:8px}
+.ir .c{font-family:var(--mono);font-size:11px;font-weight:600;flex:none;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ir .c.hit{color:var(--red)}
+.tally{height:4px;margin-top:5px;background:var(--plate-2);position:relative;overflow:hidden}
+.tally i{position:absolute;inset:0 auto 0 0;background:var(--coral);background-image:repeating-linear-gradient(45deg,var(--red) 0 1px,transparent 1px 4px);width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* ══════════════════════════════════════════════════════
+   MAIN
+   ══════════════════════════════════════════════════════ */
+.main{min-width:0;padding:0 0 90px}
+.masthead{padding:22px 26px 0}
+.mast-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.mast-title{display:flex;gap:13px}
+.mast-title .bar{width:7px;background:var(--red);flex:none}
+.mast-title h2{font-size:31px;font-weight:900;letter-spacing:-.04em;line-height:.94;text-transform:uppercase}
+.mast-title h2 em{font-style:normal;color:var(--red);display:block}
+.mast-title p{margin-top:7px;font-size:12.5px;color:var(--ink-2);max-width:56ch;line-height:1.55}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.btn{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  padding:9px 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;
+  transition:box-shadow .13s,transform .13s,background .13s,color .13s,border-color .13s;
+}
+.btn:hover{background:var(--ink);color:var(--plate)}
+.btn.key{border-color:var(--red);background:var(--red);color:#fff}
+.btn.key:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-1px,-1px)}
+.btn:disabled{opacity:.45;cursor:wait}
+
+.state{
+  font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+  padding:7px 11px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule-soft);color:var(--ink-2);
+}
+.state::before{content:"";width:6px;height:6px;background:currentColor;border-radius:50%}
+.state.live{color:var(--red);border-color:var(--rule)}
+.state.live::before{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25;transform:scale(.6)}}
+
+/* measurement scale + ticker */
+.scale{margin:20px 0 0;border-top:1px solid var(--red);border-bottom:1px solid var(--red);background:var(--plate);overflow:hidden}
+.ticker{display:flex;gap:0;white-space:nowrap;will-change:transform;animation:slide 46s linear infinite}
+.scale:hover .ticker{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.tk{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-2);
+  padding:7px 20px;border-right:1px solid var(--rule);flex:none;
+}
+.tk b{color:var(--red);font-weight:600}
+
+/* tabs = filing index */
+.filing{display:flex;gap:0;padding:0 26px;border-bottom:1px solid var(--rule);margin-top:0;flex-wrap:wrap}
+.tab{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  padding:14px 17px;border:0;background:transparent;color:var(--ink-2);cursor:pointer;position:relative;
+  transition:color .14s;
+}
+.tab i{font-style:normal;color:var(--rule);margin-right:7px}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--red)}
+.tab.active i{color:var(--red)}
+.tab::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+.tab.active::after{transform:scaleX(1)}
+
+.view{padding:24px 26px 0}
+
+/* ══════════════════════════════════════════════════════
+   CATEGORY PLATES
+   ══════════════════════════════════════════════════════ */
+.plate-sec{margin-bottom:34px;opacity:0;transform:translateY(10px)}
+.plate-sec.in{opacity:1;transform:none;transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+.plate-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:9px;border-bottom:2px solid var(--red);margin-bottom:16px}
+.plate-hd-l{display:flex;align-items:flex-start;gap:12px}
+.chip{
+  width:38px;height:38px;flex:none;display:grid;place-items:center;color:#fff;
+  font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:-.02em;
+}
+.plate-hd h3{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.05;text-transform:uppercase}
+.plate-hd .sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+.plate-hd .cnt{text-align:right;flex:none}
+.plate-hd .cnt b{font-size:30px;font-weight:800;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;display:block}
+.plate-hd .cnt.hit b{color:var(--red)}
+
+.specimens{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:14px}
+.spec{
+  border:1px solid var(--rule-soft);background:var(--plate);display:flex;flex-direction:column;
+  transition:box-shadow .16s,border-color .16s,transform .16s;position:relative;
+}
+.spec:hover{border-color:var(--red);box-shadow:5px 5px 0 var(--coral);transform:translate(-2px,-2px)}
+.spec.on{border-color:var(--red)}
+.spec.on::after{
+  content:"";position:absolute;top:0;right:0;width:0;height:0;
+  border-top:16px solid var(--red);border-left:16px solid transparent;
+}
+.dish{position:relative;aspect-ratio:1/1;background:var(--plate-2);overflow:hidden}
+.dish::before{
+  content:"";position:absolute;inset:11%;border-radius:50%;border:1px solid var(--rule);
+  background-image:repeating-linear-gradient(45deg,var(--coral-3) 0 2px,transparent 2px 7px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.spec:hover .dish::before{transform:rotate(22deg) scale(1.03)}
+.spec.on .dish::before{background-color:var(--coral-3)}
+.dish .tick{position:absolute;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--red);opacity:.55}
+.dish .tick.tl{top:6px;left:7px}
+.dish .tick.br{bottom:6px;right:7px}
+model-viewer{position:relative;width:100%;height:100%;display:block;background:transparent;opacity:0;transition:opacity .45s}
+.load{position:absolute;inset:0;display:grid;place-items:center;gap:8px;align-content:center}
+.spin{width:24px;height:24px;border:1px solid var(--rule);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load span{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.gone{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px;text-align:center;background:var(--plate-2)}
+.gone .g1{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--red)}
+.gone .g2{font-family:var(--mono);font-size:7.5px;color:var(--ink-2);word-break:break-all;line-height:1.45;max-width:90%}
+.spec-body{padding:11px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1;border-top:1px solid var(--rule-soft)}
+.spec-name{font-size:12px;font-weight:600;line-height:1.35;letter-spacing:-.005em;flex:1}
+.spec-row{display:flex;align-items:baseline;gap:7px}
+.spec-row .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.spec-row .lead{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-3px)}
+.spec-row b{font-family:var(--mono);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.spec-row b.hit{color:var(--red)}
+.meter{height:5px;background:var(--plate-2)}
+.meter i{display:block;height:100%;width:0;background:var(--coral);background-image:repeating-linear-gradient(45deg,var(--red) 0 1px,transparent 1px 4px);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+
+/* ══════════════════════════════════════════════════════
+   OVERVIEW
+   ══════════════════════════════════════════════════════ */
+.figs{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--red);margin-bottom:18px}
+.fig{padding:16px 17px;border-right:1px solid var(--rule)}
+.fig:last-child{border-right:0}
+.fig .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-2)}
+.fig .v{font-size:40px;font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:7px;color:var(--red);font-variant-numeric:tabular-nums}
+.fig .v.txt{font-size:17px;letter-spacing:-.02em;line-height:1.2;color:var(--ink)}
+.fig .u{font-family:var(--mono);font-size:9px;color:var(--ink-2);margin-top:6px;letter-spacing:.06em}
+
+.card-sec{border:1px solid var(--rule-soft);background:var(--plate);margin-bottom:18px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.card-hd h4{font-size:13px;font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+.card-bd{padding:14px 16px}
+
+.brow{display:grid;grid-template-columns:26px minmax(120px,200px) 1fr 46px;align-items:center;gap:10px;padding:5px 0}
+.brow .bn{font-family:var(--mono);font-size:9.5px;color:var(--red)}
+.brow .bt{font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btrack{height:13px;background:var(--plate-2);position:relative}
+.btrack i{position:absolute;inset:0 auto 0 0;width:0;background:var(--coral);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.brow .bv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.brow .bv.hit{color:var(--red)}
+
+table.reg{width:100%;border-collapse:collapse}
+table.reg th{
+  font-family:var(--mono);font-size:8.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);
+  text-align:left;padding:9px 12px;border-bottom:1px solid var(--red);white-space:nowrap;
+}
+table.reg td{padding:8px 12px;border-bottom:1px dotted var(--rule);font-size:11.5px;vertical-align:middle}
+table.reg tr:hover td{background:var(--coral-3)}
+table.reg tr.hit td{background:rgba(250,149,133,.13)}
+.tcat{display:flex;align-items:center;gap:7px}
+.tdot{width:17px;height:17px;flex:none}
+.tid{font-family:var(--mono);font-size:9.5px;color:var(--ink-2)}
+.tnum{font-family:var(--mono);font-size:12px;font-weight:600;text-align:center;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tnum.hit{color:var(--red)}
+.tbar{height:6px;background:var(--plate-2);min-width:70px}
+.tbar i{display:block;height:100%;background:var(--coral);background-image:repeating-linear-gradient(45deg,var(--red) 0 1px,transparent 1px 4px)}
+
+/* ══════════════════════════════════════════════════════
+   NETWORK
+   ══════════════════════════════════════════════════════ */
+.net{display:none}
+.net .card-bd{padding:0}
+canvas{width:100%;height:calc(100vh - 300px);min-height:440px;display:block;background:var(--plate)}
+.tip{
+  position:fixed;pointer-events:none;z-index:99;display:none;background:var(--ink);color:var(--plate);
+  padding:8px 11px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;max-width:220px;line-height:1.5;
+}
+.tip b{color:var(--coral)}
+
+/* ══════════════════════════════════════════════════════
+   SUBMISSIONS + COMMENTS
+   ══════════════════════════════════════════════════════ */
+.subs{display:none;border:1px solid var(--rule-soft);background:var(--plate);margin-bottom:18px}
+.strip{display:flex;gap:11px;overflow-x:auto;padding:14px 16px}
+.sub{flex:0 0 168px;border:1px solid var(--rule-soft);text-decoration:none;background:var(--plate-2);transition:border-color .14s,box-shadow .14s,transform .14s}
+.sub:hover{border-color:var(--red);box-shadow:4px 4px 0 var(--coral);transform:translate(-1px,-1px)}
+.sub img{display:block;width:100%;height:104px;object-fit:cover;background:var(--plate-2);filter:saturate(.35) contrast(1.05)}
+.sub:hover img{filter:none}
+.sub-meta{display:flex;justify-content:space-between;gap:6px;padding:7px 9px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:var(--ink-2);border-top:1px solid var(--rule-soft)}
+.sub-meta b{color:var(--red)}
+
+.notes{display:none}
+.notes-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid var(--red);margin-bottom:16px}
+.notes-hd h3{font-size:21px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
+.notes-hd p{font-size:12px;color:var(--ink-2);margin-top:5px}
+.link{
+  font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  padding:8px 12px;border:1px solid var(--ink);text-decoration:none;display:inline-block;transition:background .14s,color .14s;
+}
+.link:hover{background:var(--ink);color:var(--plate)}
+.note-figs{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--red);margin-bottom:16px}
+.note-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:13px}
+.note{border:1px solid var(--rule-soft);background:var(--plate);padding:14px 15px;transition:border-color .15s,box-shadow .15s,transform .15s}
+.note:hover{border-color:var(--red);box-shadow:5px 5px 0 var(--coral-3);transform:translate(-2px,-2px)}
+.note .nh{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.note .nn{width:26px;height:26px;flex:none;display:grid;place-items:center;background:var(--red);color:#fff;font-family:var(--mono);font-size:10px;font-weight:600}
+.note .nm{font-family:var(--mono);font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2)}
+.note .nt{font-size:13px;line-height:1.72;padding-left:13px;border-left:2px solid var(--coral)}
+.empty{padding:44px 20px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-2);line-height:2}
+.empty b{display:block;color:var(--red);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE + MOTION
+   ══════════════════════════════════════════════════════ */
+@media(max-width:1000px){
+  .app{grid-template-columns:1fr}
+  .rail{position:relative;max-height:none;border-right:0;border-bottom:1px solid var(--red)}
+  .figs,.note-figs{grid-template-columns:repeat(2,1fr)}
+  .fig{border-bottom:1px solid var(--rule)}
+  .brow{grid-template-columns:24px 1fr 40px}
+  .brow .btrack{display:none}
+}
+@media(max-width:620px){
+  .shell{padding:9px}
+  .plate{border-width:5px}
+  .masthead,.view,.filing{padding-left:15px;padding-right:15px}
+  .mast-title h2{font-size:23px}
+  .figs,.note-figs{grid-template-columns:1fr}
+  .specimens{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .plate-sec{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="plate">
+<div class="app">
+
+  <!-- ═══════ INDEX RAIL ═══════ -->
+  <aside class="rail">
+    <div class="rail-block">
+      <div class="mark">
+        <div class="mark-bar"></div>
+        <div>
+          <h1>Street Furniture<em>Field Survey</em></h1>
+          <small id="railSub">Model_Pravet · loading</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="ro"><div class="k">Submissions</div><div class="v" id="kSubs">—</div></div>
+      <div class="ro"><div class="k">Placements</div><div class="v" id="kPlace">—</div></div>
+      <div class="ro"><div class="k">Models chosen</div><div class="v" id="kModels">—</div></div>
+      <div class="ro"><div class="k">Categories used</div><div class="v" id="kCats">—</div></div>
+    </div>
+
+    <div class="find">
+      <span>/</span>
+      <input id="search" placeholder="Filter categories or models" aria-label="Filter categories or models"/>
+    </div>
+
+    <div class="idx-hd">
+      <div class="eyebrow">Index — 17 categories</div>
+      <div class="eyebrow">Count</div>
+    </div>
+    <ul class="idx" id="idx"></ul>
+  </aside>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <main class="main">
+    <header class="masthead">
+      <div class="mast-top">
+        <div class="mast-title">
+          <div class="bar"></div>
+          <div>
+            <h2>Pravet Park<em>Furniture Plates</em></h2>
+            <p>Every 3D model residents could place in the park, plate by plate — with how many times each one was actually chosen. Drag a model to rotate it, scroll to zoom.</p>
+          </div>
+        </div>
+        <div class="tools">
+          <span id="stateBadge" class="state">Loading</span>
+          <button class="btn" id="btnReload">Reload data</button>
+          <button class="btn key" id="btnCSV">Export CSV</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="scale"><div class="ticker" id="ticker"></div></div>
+
+    <nav class="filing">
+      <button class="tab active" id="tabCatalog"><i>01</i>Plates</button>
+      <button class="tab" id="tabDash"><i>02</i>Overview</button>
+      <button class="tab" id="tabNet"><i>03</i>Network</button>
+      <button class="tab" id="tabSugg"><i>04</i>Comments</button>
+    </nav>
+
+    <div class="view">
+      <section id="catalogView"></section>
+      <section id="dashView" style="display:none"></section>
+
+      <section class="card-sec net" id="netView">
+        <div class="card-hd">
+          <h4>Co-selection network</h4>
+          <span class="eyebrow">Node = category · Line = chosen together</span>
+        </div>
+        <div class="card-bd"><canvas id="netCanvas"></canvas></div>
+      </section>
+
+      <section class="subs" id="subsView">
+        <div class="card-hd">
+          <h4>Submitted layouts <span class="eyebrow" id="subsCount"></span></h4>
+          <span class="eyebrow">Open an image to view full size</span>
+        </div>
+        <div class="strip" id="subsStrip"></div>
+      </section>
+
+      <section class="notes" id="notesView">
+        <div class="notes-hd">
+          <div>
+            <h3>Resident comments</h3>
+            <p>Free-text notes left alongside each layout (column E of the response sheet).</p>
+          </div>
+          <div class="tools">
+            <span id="notesBadge" class="state">Loading</span>
+            <a class="link" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/1MJIwESAxuGGwXjEZr7q7Xu9x7159SAYbDePapHdmoSs/edit?usp=sharing">Open sheet</a>
+          </div>
+        </div>
+        <div class="note-figs">
+          <div class="fig"><div class="k">Rows scanned</div><div class="v" id="nRows">—</div></div>
+          <div class="fig"><div class="k">With a comment</div><div class="v" id="nFilled">—</div></div>
+          <div class="fig"><div class="k">Rows in sheet</div><div class="v" id="nTotal">—</div></div>
+        </div>
+        <div id="notesList" class="note-list">
+          <div class="empty"><b>Loading</b>Reading column E from the response sheet.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="tip" id="tip"></div>
+  </main>
+</div>
+</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   SHEET IDs
+═══════════════════════════════════════════════ */
+const SHEET1_ID = "11TNv7OQtxeFjaMX_sUuSWH6R8Sb35GIDqsIUJs2UrVQ";
+const SHEET2_ID = "1MJIwESAxuGGwXjEZr7q7Xu9x7159SAYbDePapHdmoSs";
+const SHEET1_TAB = "submissions";   // tab the submission app writes to
+
+/* ═══════════════════════════════════════════════
+   EMBEDDED DATA FROM SHEET 1 (JSON snapshot)
+   Keys: "THAI_CAT::THAI_MODEL", Values: count
+═══════════════════════════════════════════════ */
+const SHEET1_JSON = {
+  "01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย":0,
+  "01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม":1,
+  "01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน":0,
+  "01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้":0,
+  "01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม":1,
+  "02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง":0,
+  "02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง":1,
+  "02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน":0,
+  "02 โต๊ะ::โต๊ะทำงานกลางแจ้ง":0,
+  "03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์":0,
+  "03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว":1,
+  "03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง":0,
+  "03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ":1,
+  "03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง":1,
+  "04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน":2,
+  "04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน":0,
+  "04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย":2,
+  "04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย":0,
+  "04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ":0,
+  "05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน":1,
+  "05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์":1,
+  "05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา":1,
+  "05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง":1,
+  "06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด":1,
+  "06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น":1,
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น":1,
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง":1,
+  "07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป":0,
+  "07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา":0,
+  "07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้":0,
+  "07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ":0,
+  "08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง":0,
+  "08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย":0,
+  "08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม":0,
+  "08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง":0,
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา":0,
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล":0,
+  "11 จุดทิ้งขยะ::ถังขยะแยกประเภท":0,
+  "11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย":0,
+  "11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง":0,
+  "12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน":0,
+  "12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม":0,
+  "12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน":0,
+  "12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม":0,
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา":0,
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ":0,
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม":0,
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง":0,
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ":0,
+  "17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก":0,
+  "18 คน::คน 01":0,"18 คน::คน 02":0,"18 คน::คน 03":0,"18 คน::คน 04":0,"18 คน::คน 05":0
+};
+
+/* ═══════════════════════════════════════════════
+   THAI ↔ ENGLISH MAPPING
+   Maps "thaiCatPrefix::thaiModelName" → catalog mk (catId/englishItemName)
+═══════════════════════════════════════════════ */
+const THAI_TO_MK = {
+  "01 เก้าอี้::เก้าอี้สนามแบบม้านั่งเตี้ย":"01/Low-profile outdoor bench",
+  "01 เก้าอี้::เก้าอี้ชมสนามกีฬาแบบอัฒจันทร์ย่อม":"01/Small-scale stadium/grandstand seating",
+  "01 เก้าอี้::เก้าอี้มีพนักพิงพร้อมที่วางแขน":"01/Chair with backrest and armrests",
+  "01 เก้าอี้::เก้าอี้วงกลมรอบต้นไม้":"01/Circular tree bench",
+  "01 เก้าอี้::เก้าอี้เอนกาย/เก้าอี้นอนสนาม":"01/Recliner/Outdoor lounge chair",
+  "02 โต๊ะ::โต๊ะปิกนิกพร้อมม้านั่ง":"02/Picnic table with benches",
+  "02 โต๊ะ::โต๊ะบาร์ยืน/โต๊ะสูงริมทางวิ่ง":"02/Standing bar table/High table along running paths",
+  "02 โต๊ะ::โต๊ะหมากรุก/เกมกระดาน":"02/Chess/Board game table",
+  "02 โต๊ะ::โต๊ะทำงานกลางแจ้ง":"02/Outdoor workstation",
+  "03 เครื่องออกกำลังกาย::สเตชั่นยืดเหยียด/คูลดาวน์":"03/Stretching/Cool-down station",
+  "03 เครื่องออกกำลังกาย::เครื่องฝึกแรงต้านแบบน้ำหนักตัว":"03/Bodyweight resistance training equipment",
+  "03 เครื่องออกกำลังกาย::เครื่องคาร์ดิโอแบบกลางแจ้ง":"03/Outdoor cardio equipment",
+  "03 เครื่องออกกำลังกาย::สเตชั่นฝึกสมดุล/ผู้สูงอายุ":"03/Balance training station (for seniors)",
+  "03 เครื่องออกกำลังกาย::โซนเวทแบบใช้ดัมบ์เบลกลางแจ้ง":"03/Outdoor dumbbell weight zone",
+  "04 เครื่องเล่นเด็ก::โครงปีนหน้าผา/ผนังปีน":"04/Climbing frame/Climbing wall",
+  "04 เครื่องเล่นเด็ก::ชุดสไลเดอร์–หอคอย–สะพาน":"04/Slide–Tower–Bridge play structure",
+  "04 เครื่องเล่นเด็ก::ชิงช้าแบบปลอดภัย":"04/Safety swing set",
+  "04 เครื่องเล่นเด็ก::เครื่องเล่นน้ำแบบพ่นฝอย":"04/Mist/Spray water play feature",
+  "04 เครื่องเล่นเด็ก::โซนเล่นเชิงสร้างสรรค์ด้วยทราย/ธรรมชาติ":"04/Creative play zone (Sand/Nature-based)",
+  "05 กล้องวงจรปิด::กล้องทางเข้า–ออกสวน":"05/Park entrance/exit camera",
+  "05 กล้องวงจรปิด::กล้องโซนสนามกีฬาและอัฒจันทร์":"05/Sports field and grandstand camera",
+  "05 กล้องวงจรปิด::กล้องตามทางวิ่งและจุดอับสายตา":"05/Camera along running paths and blind spots",
+  "05 กล้องวงจรปิด::กล้องใกล้บ่อน้ำ/พื้นที่เสี่ยง":"05/Camera near ponds/high-risk areas",
+  "06 ตู้กดน้ำสาธารณะ::น้ำดื่มพร้อมที่เติมขวด":"06/Drinking water with bottle-filling station",
+  "06 ตู้กดน้ำสาธารณะ::ตู้กดน้ำแบบเข้าถึงรถเข็น":"06/Wheelchair-accessible water dispenser",
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำ–ล้างมือใกล้สนามเด็กเล่น":"06/Water/hand-washing point near playground",
+  "06 ตู้กดน้ำสาธารณะ::จุดน้ำสำหรับสัตว์เลี้ยง":"06/Water point for pets",
+  "07 ไฟส่องสว่าง::เสาไฟทางเดินทั่วไป":"07/General pathway lighting",
+  "07 ไฟส่องสว่าง::ไฟสปอร์ตไลท์สนามกีฬา":"07/Sports field floodlights",
+  "07 ไฟส่องสว่าง::ไฟบรรยากาศริมบ่อน้ำ/ทางเดินไม้":"07/Ambient lighting (pond/wooden walkway)",
+  "07 ไฟส่องสว่าง::ไฟโซลาร์อัจฉริยะ":"07/Smart solar lighting",
+  "08 ที่หลบฝน/หลังคา::ศาลากันแดด–กันฝนแบบเปิดโล่ง":"08/Open-air sun/rain pavilion",
+  "08 ที่หลบฝน/หลังคา::เพอร์โกลาพร้อมไม้เลื้อย":"08/Pergola with climbing plants",
+  "08 ที่หลบฝน/หลังคา::หลังคาคลุมจุดนั่งชมสนาม":"08/Sheltered spectator seating",
+  "08 ที่หลบฝน/หลังคา::ซุ้มรอ–จุดนัดพบ":"08/Waiting/Meeting kiosk",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์นักวิ่ง–นักกีฬา":"09/Lockers for runners/athletes",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ฝากของสำหรับกิจกรรมเมือง":"09/Storage lockers for urban events",
+  "09 ตู้ล็อคเกอร์สาธารณะ::ตู้ล็อคเกอร์อุปกรณ์ยืมใช้":"09/Lockers for loaner equipment",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED จุดศูนย์กลางสวน":"10/AED station (Park Center)",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED โซนสนามกีฬา":"10/AED station (Sports Zone)",
+  "10 เครื่องกระตุกหัวใจ AED::ตู้ AED ใกล้ทางวิ่งระยะไกล":"10/AED station (Near long-distance running track)",
+  "11 จุดทิ้งขยะ::ถังขยะแยกประเภท":"11/Recycling bins (Waste separation)",
+  "11 จุดทิ้งขยะ::ถังขยะริมทางวิ่งแบบจุดย่อย":"11/Pathway waste bins (Sub-stations)",
+  "11 จุดทิ้งขยะ::ถังทิ้งมูลสัตว์เลี้ยง":"11/Pet waste bins",
+  "12 ลำโพงกระจายเสียง::ระบบประกาศฉุกเฉินทั่วสวน":"12/Park-wide emergency announcement system",
+  "12 ลำโพงกระจายเสียง::ลำโพงโซนสนามกีฬาและกิจกรรม":"12/Speakers (Sports & Activity Zones)",
+  "12 ลำโพงกระจายเสียง::ลำโพงดนตรีบรรยากาศโซนพักผ่อน":"12/Ambient music speakers (Relaxation Zones)",
+  "12 ลำโพงกระจายเสียง::จุดประกาศสองภาษา/ข้อมูลสวน":"12/Bilingual Announcement/Park Information Points",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายแผนที่สวนแบบรวม":"13/Integrated Park Map Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายบอกทิศทางแบบเสาเข็ม":"13/Post-mounted Directional Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::หมุดระยะทางลู่วิ่ง":"13/Running Track Distance Markers",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายกติกาการใช้พื้นที่/สนาม":"13/Area/Facility Usage Rules Signage",
+  "13 ป้ายและระบบ Wayfinding / Signage::ป้ายเตือนความเสี่ยงริมบ่อน้ำ":"13/Pond-side Hazard Warning Signage",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แนวไม้ให้ร่มตามทางวิ่ง":"14/Shade-providing Tree Lines along Running Paths",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::แปลงพุ่มเตี้ย":"14/Low Shrub Beds",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::ลานหญ้าใช้งานพร้อมร่มเงา":"14/Functional Lawn Areas with Shade",
+  "14 ร่มเงา–ต้นไม้–ภูมิทัศน์ใช้งาน::โครงบังแดดแบบเบา":"14/Lightweight Sunshade Structures",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::เสาฉุกเฉิน SOS พร้อมไฟและสัญญาณ":"15/SOS Emergency Posts with Lights and Signals",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดปฐมพยาบาลพื้นฐาน":"15/Basic First Aid Stations",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ป้ายรหัสโซน/พิกัดสวนสำหรับแจ้งเหตุ":"15/Zone Code/Park Coordinate Signage for Reporting Incidents",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::ราวกันตกและขอบกันลื่นริมบ่อน้ำ":"15/Guardrails and Non-slip Edges along Ponds",
+  "15 ความปลอดภัยและขอความช่วยเหลือ::จุดเจ้าหน้าที่/ตู้สื่อสารบริการ":"15/Staff Stations/Service Communication Booths",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::ที่จอดจักรยานแบบ U-Rack":"16/U-Rack Bicycle Parking",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดจอดสกู๊ตเตอร์/ไมโครโมบิลิตี้แบบจัดระเบียบ":"16/Organized Scooter/Micromobility Parking Zones",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::จุดซ่อมจักรยานพร้อมปั๊มลม":"16/Bicycle Repair Stations with Air Pumps",
+  "16 การจัดการจักรยานและไมโครโมบิลิตี้::มาตรการชะลอความเร็ว":"16/Speed Calming Measures",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดเล็กแยกเพศแบบแยกห้อง":"17/Small, Gender-separated Restroom Units (Individual Stalls)",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำขนาดกลาง แยกเพศ เพศละ 2 ห้อง":"17/Medium-sized, Gender-separated Restrooms (2 Stalls per Gender)",
+  "17 ห้องน้ำสาธารณะ::ห้องน้ำใหญ่สุดพร้อมห้องอาบน้ำ":"17/Large Restroom Facilities with Showers",
+  "17 ห้องน้ำสาธารณะ::จุดล้างมือ–ล้างเท้าด้านนอก":"17/Exterior Hand and Foot Washing Stations",
+  "18 คน::คน 01":"18/คน 01","18 คน::คน 02":"18/คน 02",
+  "18 คน::คน 03":"18/คน 03","18 คน::คน 04":"18/คน 04","18 คน::คน 05":"18/คน 05"
+};
+
+/* ═══════════════════════════════════════════════
+   CATALOG (English)
+═══════════════════════════════════════════════ */
+const CATALOG = [
+  {id:"01",name:"Chairs",thaiName:"เก้าอี้",color:"c1",emoji:"🪑",items:[
+    {name:"Low-profile outdoor bench",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/A/1.glb"},
+    {name:"Small-scale stadium/grandstand seating",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/B/1.glb"},
+    {name:"Chair with backrest and armrests",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/C/1.glb"},
+    {name:"Circular tree bench",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/D/1.glb"},
+    {name:"Recliner/Outdoor lounge chair",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/01%20Chair/E/1.glb"},
+  ]},
+  {id:"02",name:"Tables",thaiName:"โต๊ะ",color:"c2",emoji:"🪵",items:[
+    {name:"Picnic table with benches",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Picnic%20table%20with%20benches/1.glb"},
+    {name:"Standing bar table/High table along running paths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Standing%20bar%20table%20High%20table%20along%20running%20paths/1.glb"},
+    {name:"Chess/Board game table",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Chess%20Board%20game%20table/1.glb"},
+    {name:"Outdoor workstation",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/02%20Tables/Table%20-%20Outdoor%20workstation/1.glb"},
+  ]},
+  {id:"03",name:"Exercise Equipment",thaiName:"เครื่องออกกำลังกาย",color:"c3",emoji:"🏋️",items:[
+    {name:"Stretching/Cool-down station",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Stretching%20Cool-down%20station/1.glb"},
+    {name:"Bodyweight resistance training equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Bodyweight%20resistance%20training%20equipment/1.glb"},
+    {name:"Outdoor cardio equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Outdoor%20cardio%20equipment/1.glb"},
+    {name:"Balance training station (for seniors)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Balance%20training%20station%20for%20seniors/1.glb"},
+    {name:"Outdoor dumbbell weight zone",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/03%20Exercise%20Equipment/Outdoor%20dumbbell%20weight%20zone/1.glb"},
+  ]},
+  {id:"04",name:"Playground Equipment",thaiName:"เครื่องเล่นเด็ก",color:"c4",emoji:"🛝",items:[
+    {name:"Climbing frame/Climbing wall",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Climbing%20frame%20Climbing%20wall/1.glb"},
+    {name:"Slide–Tower–Bridge play structure",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Slide-Tower-Bridge%20play%20structure/1.glb"},
+    {name:"Safety swing set",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Safety%20swing%20set/1.glb"},
+    {name:"Mist/Spray water play feature",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Mist%20Spray%20water%20play%20feature/1.glb"},
+    {name:"Creative play zone (Sand/Nature-based)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/04%20Playground%20Equipment/Creative%20play%20zone%20Sand%20Nature-based/1.glb"},
+  ]},
+  {id:"05",name:"CCTV Cameras",thaiName:"กล้องวงจรปิด",color:"c5",emoji:"📷",items:[
+    {name:"Park entrance/exit camera",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Park%20entrance%20exit%20camera/1.glb"},
+    {name:"Sports field and grandstand camera",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Sports%20field%20and%20grandstand%20camera/1.glb"},
+    {name:"Camera along running paths and blind spots",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Camera%20along%20running%20paths%20and%20blind%20spots/1.glb"},
+    {name:"Camera near ponds/high-risk areas",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/05%20CCTV%20Cameras/Camera%20near%20ponds%20high-risk%20areas/1.glb"},
+  ]},
+  {id:"06",name:"Public Water Dispensers",thaiName:"ตู้กดน้ำสาธารณะ",color:"c6",emoji:"💧",items:[
+    {name:"Drinking water with bottle-filling station",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Drinking%20water%20with%20bottle-filling%20station/1.glb"},
+    {name:"Wheelchair-accessible water dispenser",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Wheelchair-accessible%20water%20dispenser/1.glb"},
+    {name:"Water/hand-washing point near playground",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Water%20hand-washing%20point%20near%20playground/1.glb"},
+    {name:"Water point for pets",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/06%20Public%20Water%20Dispensers/Water%20point%20for%20pets/1.glb"},
+  ]},
+  {id:"07",name:"Lighting",thaiName:"ไฟส่องสว่าง",color:"c7",emoji:"💡",items:[
+    {name:"General pathway lighting",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/General%20pathway%20lighting/1.glb"},
+    {name:"Sports field floodlights",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Sports%20field%20floodlights/1.glb"},
+    {name:"Ambient lighting (pond/wooden walkway)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Ambient%20lighting%20pond%20wooden%20walkway/1.glb"},
+    {name:"Smart solar lighting",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/07%20Lighting/Smart%20solar%20lighting/1.glb"},
+  ]},
+  {id:"08",name:"Rain Shelters/Roof Structures",thaiName:"ที่หลบฝน/หลังคา",color:"c8",emoji:"⛺",items:[
+    {name:"Open-air sun/rain pavilion",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Open-air%20sun%20rain%20pavilion/1.glb"},
+    {name:"Pergola with climbing plants",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Pergola%20with%20climbing%20plants/1.glb"},
+    {name:"Sheltered spectator seating",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Sheltered%20spectator%20seating/1.glb"},
+    {name:"Waiting/Meeting kiosk",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/08%20Rain%20Shelters%20Roof%20Structures/Waiting%20Meeting%20kiosk/1.glb"},
+  ]},
+  {id:"09",name:"Public Lockers",thaiName:"ตู้ล็อคเกอร์สาธารณะ",color:"c9",emoji:"🔒",items:[
+    {name:"Lockers for runners/athletes",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Lockers%20for%20runners%20athletes/1.glb"},
+    {name:"Storage lockers for urban events",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Storage%20lockers%20for%20urban%20events/1.glb"},
+    {name:"Lockers for loaner equipment",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/09%20Public%20Lockers/Lockers%20for%20loaner%20equipment/1.glb"},
+  ]},
+  {id:"10",name:"AED Defibrillators",thaiName:"เครื่องกระตุกหัวใจ AED",color:"c10",emoji:"❤️‍🩹",items:[
+    {name:"AED station (Park Center)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Park%20Center/1.glb"},
+    {name:"AED station (Sports Zone)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Sports%20Zone/1.glb"},
+    {name:"AED station (Near long-distance running track)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/10%20AED%20Defibrillators/AED%20station%20Near%20long-distance%20running%20track/1.glb"},
+  ]},
+  {id:"11",name:"Waste Disposal Points",thaiName:"จุดทิ้งขยะ",color:"c11",emoji:"♻️",items:[
+    {name:"Recycling bins (Waste separation)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Recycling%20bins%20Waste%20separation/1.glb"},
+    {name:"Pathway waste bins (Sub-stations)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Pathway%20waste%20bins%20Sub-stations/1.glb"},
+    {name:"Pet waste bins",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/11%20Waste%20Disposal%20Points/Pet%20waste%20bins/1.glb"},
+  ]},
+  {id:"12",name:"Public Address Speakers",thaiName:"ลำโพงกระจายเสียง",color:"c12",emoji:"📢",items:[
+    {name:"Park-wide emergency announcement system",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Park-wide%20emergency%20announcement%20system/1.glb"},
+    {name:"Speakers (Sports & Activity Zones)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Park-wide%20emergency%20announcement%20system/1.glb"},
+    {name:"Ambient music speakers (Relaxation Zones)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Ambient%20music%20speakers%20Relaxation%20Zones/1.glb"},
+    {name:"Bilingual Announcement/Park Information Points",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/12%20Public%20Address%20Speakers/Bilingual%20Announcement%20Park%20Information%20Points/1.glb"},
+  ]},
+  {id:"13",name:"Signage and Wayfinding",thaiName:"ป้ายและระบบ Wayfinding",color:"c13",emoji:"🗺️",items:[
+    {name:"Integrated Park Map Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Integrated%20Park%20Map%20Signage/Meshy_AI_a_Main_park_map_sign_0322013436_generate.glb"},
+    {name:"Post-mounted Directional Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Post-mounted%20Directional%20Signage/1.glb"},
+    {name:"Running Track Distance Markers",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Post-mounted%20Directional%20Signage/1.glb"},
+    {name:"Area/Facility Usage Rules Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Area%20Facility%20Usage%20Rules%20Signage/1.glb"},
+    {name:"Pond-side Hazard Warning Signage",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/13%20Signage%20and%20Wayfinding%20Systems/Pond-side%20Hazard%20Warning%20Signage/1.glb"},
+  ]},
+  {id:"14",name:"Shade, Trees & Functional Landscape",thaiName:"ร่มเงา–ต้นไม้–ภูมิทัศน์",color:"c14",emoji:"🌳",items:[
+    {name:"Shade-providing Tree Lines along Running Paths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Shade-providing%20Tree%20Lines%20along%20Running%20Paths/1.glb"},
+    {name:"Low Shrub Beds",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Low%20Shrub%20Beds/1.glb"},
+    {name:"Functional Lawn Areas with Shade",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Functional%20Lawn%20Areas%20with%20Shade/1.glb"},
+    {name:"Lightweight Sunshade Structures",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/14%20Shade%20Trees%20Functional%20Landscape/Lightweight%20Sunshade%20Structures/1.glb"},
+  ]},
+  {id:"15",name:"Safety and Assistance",thaiName:"ความปลอดภัยและขอความช่วยเหลือ",color:"c15",emoji:"🆘",items:[
+    {name:"SOS Emergency Posts with Lights and Signals",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Guardrails%20and%20Non-slip%20Edges%20along%20Ponds/1.glb"},
+    {name:"Basic First Aid Stations",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Basic%20First%20Aid%20Stations/1.glb"},
+    {name:"Zone Code/Park Coordinate Signage for Reporting Incidents",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Zone%20Code%20Park%20Coordinate%20Signage%20for%20Reporting%20Incidents/1.glb"},
+    {name:"Guardrails and Non-slip Edges along Ponds",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Guardrails%20and%20Non-slip%20Edges%20along%20Ponds/1.glb"},
+    {name:"Staff Stations/Service Communication Booths",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/15%20Safety%20and%20Assistance/Staff%20Stations%20Service%20Communication%20Kiosks/1.glb"},
+  ]},
+  {id:"16",name:"Bicycle & Micromobility",thaiName:"การจัดการจักรยาน",color:"c16",emoji:"🚲",items:[
+    {name:"U-Rack Bicycle Parking",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/U-Rack%20Bicycle%20Parking/1.glb"},
+    {name:"Organized Scooter/Micromobility Parking Zones",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Organized%20Scooter%20Micromobility%20Parking%20Zones/1.glb"},
+    {name:"Bicycle Repair Stations with Air Pumps",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Bicycle%20Repair%20Stations%20with%20Air%20Pumps/1.glb"},
+    {name:"Speed Calming Measures",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/16%20Bicycle%20and%20Micromobility%20Management/Speed%20Calming%20Measures/1.glb"},
+  ]},
+  {id:"17",name:"Public Restrooms",thaiName:"ห้องน้ำสาธารณะ",color:"c17",emoji:"🚻",items:[
+    {name:"Small, Gender-separated Restroom Units (Individual Stalls)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Small%20Gender-separated%20Single-stall%20Restrooms/1.glb"},
+    {name:"Medium-sized, Gender-separated Restrooms (2 Stalls per Gender)",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Medium-sized%20Gender-separated%20Restrooms%202%20Stalls%20per%20Gender/1.glb"},
+    {name:"Large Restroom Facilities with Showers",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Large%20Restroom%20Facilities%20with%20Showers/1.glb"},
+    {name:"Exterior Hand and Foot Washing Stations",url:"https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/17%20Public%20Restrooms/Exterior%20Hand%20and%20Foot%20Washing%20Stations/1.glb"},
+  ]},
+];
+const TOTAL_MODELS = CATALOG.reduce((s,c)=>s+c.items.length,0);
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let catCounts = new Map(), modelCounts = new Map(), coMatrix = new Map();
+let PARTICIPANTS = 0;
+let isLiveData = false;
+let SUBMISSIONS = [];
+let UNMAPPED_KEYS = new Set();
+let EXTRA_PLACEMENTS = 0;
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Tonal ramp — one red family, no rainbow. Index position carries the tone. */
+function tone(i){
+  const l = 40 + (i % 17) * 1.9;
+  const s = 88 - (i % 5) * 7;
+  return `hsl(${8 + (i % 3) * 4} ${s}% ${l}%)`;
+}
+const catTone = new Map(CATALOG.map((c, i) => [c.id, tone(i)]));
+
+/* ═══════════════════════════════════════════════
+   SNAPSHOT LOADER (fallback data)
+═══════════════════════════════════════════════ */
+function loadEmbeddedJSON(json){
+  catCounts = new Map(CATALOG.map(c => [c.id, 0]));
+  modelCounts = new Map();
+  coMatrix = new Map();
+
+  Object.entries(json).forEach(([key, count]) => {
+    if(!count || count <= 0) return;
+    const mk = THAI_TO_MK[key];
+    if(!mk) return;
+    const catId = mk.split('/')[0];
+    modelCounts.set(mk, (modelCounts.get(mk) || 0) + count);
+    catCounts.set(catId, (catCounts.get(catId) || 0) + count);
+  });
+
+  const catList = [...catCounts.entries()].filter(([, v]) => v > 0).map(([k]) => k);
+  for(let i = 0; i < catList.length; i++) for(let j = i + 1; j < catList.length; j++){
+    const a = catList[i], b = catList[j];
+    const k = a < b ? `${a}|${b}` : `${b}|${a}`;
+    const w = Math.min(catCounts.get(a) || 0, catCounts.get(b) || 0);
+    if(w > 0) coMatrix.set(k, (coMatrix.get(k) || 0) + w);
+  }
+  PARTICIPANTS = Object.values(json).reduce((s, v) => s + (v || 0), 0);
+}
+
+/* ═══════════════════════════════════════════════
+   CSV PARSER
+═══════════════════════════════════════════════ */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const rows = []; let row = [], f = '', inQ = false, i = 0;
+  while(i < text.length){
+    const ch = text[i];
+    if(inQ){
+      if(ch === '"'){
+        if(text[i+1] === '"'){ f += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      f += ch; i++; continue;
+    }
+    if(ch === '"'){ inQ = true; i++; continue; }
+    if(ch === ','){ row.push(f); f = ''; i++; continue; }
+    if(ch === '\r'){ i++; continue; }
+    if(ch === '\n'){ row.push(f); rows.push(row); row = []; f = ''; i++; continue; }
+    f += ch; i++;
+  }
+  row.push(f); rows.push(row);
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+/* ═══════════════════════════════════════════════
+   SHEET 1 — submissions
+═══════════════════════════════════════════════ */
+function sheetEndpoints(id, tab){
+  const base = `https://docs.google.com/spreadsheets/d/${id}`;
+  const urls = [];
+  if(tab) urls.push(`${base}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+  urls.push(`${base}/gviz/tq?tqx=out:csv`);
+  urls.push(`${base}/export?format=csv`);
+  return urls;
+}
+
+async function fetchCSVText(urls){
+  let lastErr = null;
+  for(const u of urls){
+    try{
+      const sep = u.includes('?') ? '&' : '?';
+      const resp = await fetch(`${u}${sep}_cb=${Date.now()}`, { cache:'no-store' });
+      if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      if(/^\s*</.test(text)) throw new Error('sheet is not shared publicly');
+      if(text.trim()) return text;
+      throw new Error('empty response');
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error('no endpoint responded');
+}
+
+function extractSelections(cell){
+  if(!cell) return null;
+  const t = cell.trim();
+  if(t.length < 2 || t[0] !== '{') return null;
+  let obj;
+  try{ obj = JSON.parse(t); }catch(e){ return null; }
+  if(!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+  if(!Object.keys(obj).some(k => k.includes('::'))) return null;
+  return obj;
+}
+
+const IMG_RE = /^https?:\/\/\S+\.(?:png|jpe?g|webp|gif)(?:\?|#|$)/i;
+const TS_RE  = /\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}/;
+
+function parseSubmissionRows(rows){
+  const subs = [];
+  rows.forEach(r => {
+    let sel = null;
+    for(const c of r){ const got = extractSelections(c); if(got){ sel = got; break; } }
+    if(!sel) return;
+    const img = (r.find(c => IMG_RE.test((c || '').trim())) || '').trim();
+    const ts  = (r.find(c => { const v = (c || '').trim(); return v && v !== img && TS_RE.test(v); }) || '').trim();
+    subs.push({ sel, img, ts });
+  });
+  return subs;
+}
+
+const VALID_MK = new Set(CATALOG.flatMap(c => c.items.map(it => `${c.id}/${it.name}`)));
+
+function aggregateSubmissions(subs){
+  const mCounts = new Map();
+  const cCounts = new Map(CATALOG.map(c => [c.id, 0]));
+  const co = new Map();
+  let placements = 0;
+  EXTRA_PLACEMENTS = 0;
+  UNMAPPED_KEYS = new Set();
+
+  subs.forEach(sub => {
+    const cats = new Set();
+    for(const [key, raw] of Object.entries(sub.sel)){
+      const qty = Number(raw) || 0;
+      if(qty <= 0) continue;
+      const mk = THAI_TO_MK[key];
+      if(!mk){ UNMAPPED_KEYS.add(key); continue; }
+      if(!VALID_MK.has(mk)){ EXTRA_PLACEMENTS += qty; continue; }
+      const catId = mk.split('/')[0];
+      mCounts.set(mk, (mCounts.get(mk) || 0) + qty);
+      cCounts.set(catId, (cCounts.get(catId) || 0) + qty);
+      cats.add(catId);
+      placements += qty;
+    }
+    const arr = [...cats];
+    for(let i = 0; i < arr.length; i++) for(let j = i + 1; j < arr.length; j++){
+      const a = arr[i], b = arr[j], k = a < b ? `${a}|${b}` : `${b}|${a}`;
+      co.set(k, (co.get(k) || 0) + 1);
+    }
+  });
+  return { mCounts, cCounts, co, placements };
+}
+
+async function fetchSheet1(){
+  try{
+    const text = await fetchCSVText(sheetEndpoints(SHEET1_ID, SHEET1_TAB));
+    const rows = parseCSV(text);
+    const subs = parseSubmissionRows(rows);
+    if(subs.length === 0) throw new Error('no submission rows found');
+
+    const { mCounts, cCounts, co, placements } = aggregateSubmissions(subs);
+    SUBMISSIONS  = subs;
+    modelCounts  = mCounts;
+    catCounts    = cCounts;
+    coMatrix     = co;
+    PARTICIPANTS = subs.length;
+    isLiveData   = true;
+
+    setStateBadge(true, PARTICIPANTS);
+    renderSubmissions();
+    if(UNMAPPED_KEYS.size) console.warn('Sheet keys with no mapping:', [...UNMAPPED_KEYS]);
+    if(EXTRA_PLACEMENTS) console.info(`${EXTRA_PLACEMENTS} placements have no catalog card — excluded from the figures`);
+    console.log(`Live sheet: ${subs.length} submissions, ${placements} placements`);
+    return true;
+  }catch(e){
+    console.warn('Live sheet unavailable:', e.message);
+    isLiveData = false;
+    loadEmbeddedJSON(SHEET1_JSON);
+    setStateBadge(false, PARTICIPANTS, e.message);
+    renderSubmissions();
+    return false;
+  }
+}
+
+function renderSubmissions(){
+  const wrap = document.getElementById('subsView');
+  const strip = document.getElementById('subsStrip');
+  if(!wrap || !strip) return;
+  const withImg = SUBMISSIONS.filter(s => s.img);
+  if(!withImg.length){ wrap.style.display = 'none'; return; }
+  wrap.dataset.has = '1';
+  strip.innerHTML = withImg.map((s, i) => {
+    const qty = Object.values(s.sel).reduce((a, b) => a + (Number(b) || 0), 0);
+    const ts  = (s.ts || '').replace(/</g, '&lt;');
+    return `<a class="sub" href="${s.img}" target="_blank" rel="noopener">
+      <img loading="lazy" src="${s.img}" alt="Submitted layout ${i + 1}">
+      <div class="sub-meta"><b>№${String(i + 1).padStart(2, '0')}</b><span>${ts || '—'}</span><span>${qty} placed</span></div>
+    </a>`;
+  }).join('');
+}
+
+function setStateBadge(live, count, reason){
+  const b = document.getElementById('stateBadge');
+  if(live){
+    b.className = 'state live';
+    b.textContent = `Live · ${count} submissions`;
+    b.title = 'Reading directly from the response sheet';
+  }else{
+    b.className = 'state';
+    b.textContent = 'Saved snapshot';
+    b.title = reason ? `Live sheet unavailable — ${reason}` : 'Showing the bundled snapshot';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SHEET 2 — comments (column E)
+═══════════════════════════════════════════════ */
+async function fetchSheet2(){
+  const listEl = document.getElementById('notesList');
+  const badge = document.getElementById('notesBadge');
+  try{
+    const text = await fetchCSVText(sheetEndpoints(SHEET2_ID, null));
+    const rows = parseCSV(text);
+    if(rows.length < 1) throw new Error('sheet is empty');
+
+    const headerE = rows[0][4] ? rows[0][4].trim() : 'Column E';
+    const dataRows = rows.slice(1).filter(r => r.some(c => c.trim()));
+    const values = dataRows.map((r, i) => ({ idx: i + 1, text: (r[4] || '').trim() }));
+    const filled = values.filter(v => v.text.length > 0);
+
+    document.getElementById('nRows').textContent   = values.length;
+    document.getElementById('nFilled').textContent = filled.length;
+    document.getElementById('nTotal').textContent  = rows.length;
+
+    badge.className = 'state live';
+    badge.textContent = `Column E · ${headerE}`;
+
+    if(!filled.length){
+      listEl.innerHTML = `<div class="empty"><b>No comments yet</b>Column E (“${headerE}”) is still blank for every row.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = filled.map((item, i) => `
+      <article class="note">
+        <div class="nh">
+          <div class="nn">${String(i + 1).padStart(2, '0')}</div>
+          <div class="nm">Row ${item.idx} · Column E</div>
+        </div>
+        <div class="nt">${item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>
+      </article>`).join('');
+  }catch(e){
+    console.warn('Comment sheet unavailable:', e.message);
+    badge.className = 'state';
+    badge.textContent = 'Sheet unreachable';
+    listEl.innerHTML = `<div class="empty"><b>Can’t reach the sheet</b>
+      Open the spreadsheet and set sharing to “Anyone with the link”, then reload.<br><br>
+      <a class="link" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/${SHEET2_ID}/edit?usp=sharing">Open sheet</a></div>`;
+    ['nRows','nFilled','nTotal'].forEach(id => document.getElementById(id).textContent = '—');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LAZY LOAD + REVEAL
+═══════════════════════════════════════════════ */
+const mvObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    const mv = e.target;
+    if(mv.dataset.src && !mv.getAttribute('src')) mv.setAttribute('src', mv.dataset.src);
+    mvObs.unobserve(mv);
+  });
+}, { rootMargin:'300px' });
+
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.classList.add('in');
+    e.target.querySelectorAll('[data-w]').forEach((el, i) => {
+      setTimeout(() => el.style.width = el.dataset.w + '%', reduceMotion ? 0 : 30 + i * 22);
+    });
+    revealObs.unobserve(e.target);
+  });
+}, { rootMargin:'0px 0px -40px 0px', threshold:.04 });
+
+/* ═══════════════════════════════════════════════
+   INDEX RAIL
+═══════════════════════════════════════════════ */
+function buildIndex(q = ''){
+  const el = document.getElementById('idx');
+  el.innerHTML = '';
+  const f = q.trim().toLowerCase();
+  const max = Math.max(...CATALOG.map(c => catCounts.get(c.id) || 0), 1);
+  CATALOG.forEach(cat => {
+    if(f && !matches(cat, f)) return;
+    const cnt = catCounts.get(cat.id) || 0;
+    const pct = Math.round(cnt / max * 100);
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#cat-${cat.id}">
+      <div class="ir">
+        <span class="n">${cat.id}</span>
+        <span class="t">${cat.name}</span>
+        <span class="lead"></span>
+        <span class="c${cnt > 0 ? ' hit' : ''}">${cnt}</span>
+      </div>
+      <div class="tally"><i style="width:${pct}%"></i></div>
+    </a>`;
+    el.appendChild(li);
+  });
+  if(!el.children.length){
+    el.innerHTML = `<li class="empty" style="padding:26px 0">No category matches that.</li>`;
+  }
+}
+
+function matches(cat, f){
+  return cat.name.toLowerCase().includes(f)
+    || cat.id.includes(f)
+    || (cat.thaiName || '').toLowerCase().includes(f)
+    || cat.items.some(it => it.name.toLowerCase().includes(f));
+}
+
+/* ═══════════════════════════════════════════════
+   PLATES (catalog)
+═══════════════════════════════════════════════ */
+function buildCatalog(q = ''){
+  const wrap = document.getElementById('catalogView');
+  wrap.innerHTML = '';
+  const f = q.trim().toLowerCase();
+  let shown = 0;
+
+  CATALOG.forEach(cat => {
+    if(f && !matches(cat, f)) return;
+    shown++;
+    const items = f && !cat.name.toLowerCase().includes(f) && !cat.id.includes(f)
+      ? cat.items.filter(it => it.name.toLowerCase().includes(f) || (cat.thaiName || '').toLowerCase().includes(f))
+      : cat.items;
+    const list = items.length ? items : cat.items;
+
+    const maxM = Math.max(...cat.items.map(it => modelCounts.get(`${cat.id}/${it.name}`) || 0), 1);
+    const totalCat = catCounts.get(cat.id) || 0;
+    const col = catTone.get(cat.id);
+
+    const sec = document.createElement('section');
+    sec.className = 'plate-sec';
+    sec.id = `cat-${cat.id}`;
+    sec.innerHTML = `
+      <div class="plate-hd">
+        <div class="plate-hd-l">
+          <div class="chip" style="background:${col}">${cat.id}</div>
+          <div>
+            <h3>${cat.name}</h3>
+            <div class="sub">${list.length} variant${list.length === 1 ? '' : 's'} · plate ${cat.id} of 17</div>
+          </div>
+        </div>
+        <div class="cnt${totalCat > 0 ? ' hit' : ''}">
+          <b>${totalCat}</b>
+          <div class="eyebrow">placed</div>
+        </div>
+      </div>
+      <div class="specimens"></div>`;
+
+    const grid = sec.querySelector('.specimens');
+    list.forEach((item, i) => {
+      const mk = `${cat.id}/${item.name}`;
+      const cnt = modelCounts.get(mk) || 0;
+      const pct = Math.round(cnt / maxM * 100);
+      const shortPath = item.url.replace('https://edhwbkcmxgisqnznryhp.supabase.co/storage/v1/object/public/Model_Pravet/', '');
+
+      const card = document.createElement('article');
+      card.className = 'spec' + (cnt > 0 ? ' on' : '');
+      card.innerHTML = `
+        <div class="dish">
+          <span class="tick tl">${cat.id}.${String(i + 1).padStart(2, '0')}</span>
+          <span class="tick br">GLB</span>
+          <div class="load"><div class="spin"></div><span>Loading model</span></div>
+          <model-viewer data-src="${item.url}" camera-controls auto-rotate rotation-per-second="16deg"
+            shadow-intensity="0.55" exposure="1.15" alt="${item.name}"
+            style="opacity:0"></model-viewer>
+          <div class="gone">
+            <span class="g1">Model not uploaded</span>
+            <span class="g2">${decodeURIComponent(shortPath)}</span>
+          </div>
+        </div>
+        <div class="spec-body">
+          <div class="spec-name">${item.name}</div>
+          <div class="spec-row">
+            <span class="l">Placed</span><span class="lead"></span>
+            <b class="${cnt > 0 ? 'hit' : ''}">${String(cnt).padStart(2, '0')}</b>
+          </div>
+          <div class="meter"><i data-w="${pct}"></i></div>
+        </div>`;
+
+      const mv = card.querySelector('model-viewer');
+      const load = card.querySelector('.load');
+      const gone = card.querySelector('.gone');
+      mv.addEventListener('load', () => { mv.style.opacity = '1'; load.style.display = 'none'; });
+      mv.addEventListener('error', () => { mv.style.display = 'none'; load.style.display = 'none'; gone.style.display = 'flex'; });
+      mvObs.observe(mv);
+      grid.appendChild(card);
+    });
+
+    wrap.appendChild(sec);
+    revealObs.observe(sec);
+  });
+
+  if(!shown){
+    wrap.innerHTML = `<div class="empty"><b>Nothing matches “${q.replace(/</g,'&lt;')}”</b>Try a category name like “lighting”, or a model like “bench”.</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   OVERVIEW
+═══════════════════════════════════════════════ */
+function buildDash(){
+  const wrap = document.getElementById('dashView');
+  wrap.innerHTML = '';
+  const totalSel = [...modelCounts.values()].reduce((s, v) => s + v, 0);
+  const uniqueSelected = [...modelCounts.values()].filter(v => v > 0).length;
+  const activeCats = CATALOG.filter(c => (catCounts.get(c.id) || 0) > 0).length;
+  const topCat = CATALOG.reduce((a, b) => (catCounts.get(a.id) || 0) >= (catCounts.get(b.id) || 0) ? a : b);
+  const allMK = [...modelCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const topMK = allMK[0] || ['—/—', 0];
+
+  /* headline figures */
+  const figs = document.createElement('div');
+  figs.className = 'figs';
+  figs.innerHTML = [
+    ['Total placements', totalSel, isLiveData ? 'across every submission' : 'from the saved snapshot'],
+    ['Submissions', PARTICIPANTS, isLiveData ? 'rows in the response sheet' : 'snapshot rows'],
+    ['Models chosen', uniqueSelected, `of ${TOTAL_MODELS} available`],
+    ['Categories used', activeCats, `of ${CATALOG.length} categories`],
+  ].map(([k, v, u]) => `<div class="fig"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`).join('');
+  wrap.appendChild(figs);
+
+  const figs2 = document.createElement('div');
+  figs2.className = 'figs';
+  figs2.style.gridTemplateColumns = 'repeat(2,1fr)';
+  figs2.innerHTML = [
+    ['Most chosen category', `${topCat.id} · ${topCat.name}`, `${catCounts.get(topCat.id) || 0} placements`],
+    ['Most chosen model', topMK[0].split('/').slice(1).join(' '), `${topMK[1]} placements`],
+  ].map(([k, v, u]) => `<div class="fig"><div class="k">${k}</div><div class="v txt">${v}</div><div class="u">${u}</div></div>`).join('');
+  wrap.appendChild(figs2);
+
+  /* category bars */
+  const maxCat = Math.max(...CATALOG.map(c => catCounts.get(c.id) || 0), 1);
+  const bars = document.createElement('div');
+  bars.className = 'card-sec';
+  bars.innerHTML = `<div class="card-hd">
+      <h4>Placements by category</h4>
+      <span class="eyebrow">${isLiveData ? 'Live sheet' : 'Saved snapshot'}</span>
+    </div>
+    <div class="card-bd">${CATALOG.map(cat => {
+      const cnt = catCounts.get(cat.id) || 0;
+      const pct = Math.round(cnt / maxCat * 100);
+      return `<div class="brow">
+        <span class="bn">${cat.id}</span>
+        <span class="bt">${cat.name}</span>
+        <div class="btrack"><i data-w="${pct}" style="background:${catTone.get(cat.id)}"></i></div>
+        <span class="bv${cnt > 0 ? ' hit' : ''}">${cnt}</span>
+      </div>`;
+    }).join('')}</div>`;
+  wrap.appendChild(bars);
+
+  /* register table */
+  const maxModel = Math.max(...[...modelCounts.values()], 1);
+  const rows = [];
+  CATALOG.forEach(cat => cat.items.forEach(item => {
+    const mk = `${cat.id}/${item.name}`;
+    rows.push({ cat, item, cnt: modelCounts.get(mk) || 0 });
+  }));
+  rows.sort((a, b) => b.cnt - a.cnt || a.cat.id.localeCompare(b.cat.id));
+
+  const reg = document.createElement('div');
+  reg.className = 'card-sec';
+  reg.innerHTML = `<div class="card-hd">
+      <h4>Full model register</h4>
+      <span class="eyebrow">${uniqueSelected} of ${TOTAL_MODELS} chosen at least once</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="reg">
+        <thead><tr>
+          <th>Category</th><th>Model</th>
+          <th style="text-align:center">Placed</th><th style="min-width:110px">Share</th>
+        </tr></thead>
+        <tbody>${rows.map(({ cat, item, cnt }) => `
+          <tr class="${cnt > 0 ? 'hit' : ''}">
+            <td><div class="tcat">
+              <span class="tdot" style="background:${catTone.get(cat.id)}"></span>
+              <span class="tid">${cat.id}</span>
+            </div></td>
+            <td style="font-weight:${cnt > 0 ? 600 : 400}">${item.name}</td>
+            <td class="tnum${cnt > 0 ? ' hit' : ''}">${cnt}</td>
+            <td><div class="tbar"><i style="width:${Math.round(cnt / maxModel * 100)}%"></i></div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  wrap.appendChild(reg);
+
+  wrap.querySelectorAll('[data-w]').forEach((el, i) =>
+    setTimeout(() => el.style.width = el.dataset.w + '%', reduceMotion ? 0 : 40 + i * 18));
+  animateFigures(wrap);
+}
+
+function animateFigures(scope){
+  if(reduceMotion) return;
+  scope.querySelectorAll('.fig .v:not(.txt)').forEach(el => {
+    const end = parseInt(el.textContent, 10);
+    if(isNaN(end)) return;
+    const t0 = performance.now(), dur = 620;
+    (function step(now){
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+      if(p < 1) requestAnimationFrame(step);
+    })(t0);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   NETWORK
+═══════════════════════════════════════════════ */
+const netCanvas = document.getElementById('netCanvas');
+const tip = document.getElementById('tip');
+let net = { nodes:[], edges:[] };
+
+function buildNet(){
+  const max = Math.max(...CATALOG.map(c => catCounts.get(c.id) || 0), 1);
+  net.nodes = CATALOG.map((cat, i) => {
+    const a = (i / CATALOG.length) * Math.PI * 2 - Math.PI / 2;
+    const v = catCounts.get(cat.id) || 0;
+    return { id:cat.id, label:`${cat.id} ${cat.name}`, value:v, r:5 + 17 * (v / max), a, x:0, y:0 };
+  });
+  const edges = [];
+  for(const [k, v] of coMatrix.entries()){ const [a, b] = k.split('|'); edges.push({ a, b, w:v }); }
+  edges.sort((e1, e2) => e2.w - e1.w);
+  net.edges = edges.slice(0, 70);
+}
+
+function resizeCv(){
+  const dpr = Math.max(1, devicePixelRatio || 1);
+  const r = netCanvas.getBoundingClientRect();
+  netCanvas.width = Math.floor(r.width * dpr);
+  netCanvas.height = Math.floor(r.height * dpr);
+}
+
+function drawNet(){
+  const ctx = netCanvas.getContext('2d');
+  const dpr = Math.max(1, devicePixelRatio || 1);
+  const w = netCanvas.width / dpr, h = netCanvas.height / dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.34;
+
+  /* survey rings */
+  ctx.strokeStyle = 'rgba(238,46,23,.16)';
+  ctx.setLineDash([2, 5]);
+  [0.42, 0.72, 1].forEach(k => { ctx.beginPath(); ctx.arc(cx, cy, R * k, 0, Math.PI * 2); ctx.stroke(); });
+  ctx.setLineDash([]);
+
+  net.nodes.forEach(n => { n.x = cx + Math.cos(n.a) * R; n.y = cy + Math.sin(n.a) * R; });
+
+  const maxW = Math.max(...net.edges.map(e => e.w), 1);
+  net.edges.forEach(e => {
+    const na = net.nodes.find(n => n.id === e.a), nb = net.nodes.find(n => n.id === e.b);
+    if(!na || !nb) return;
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(238,46,23,${0.10 + 0.55 * (e.w / maxW)})`;
+    ctx.lineWidth = 0.6 + 2.2 * (e.w / maxW);
+    ctx.moveTo(na.x, na.y);
+    ctx.quadraticCurveTo(cx, cy, nb.x, nb.y);
+    ctx.stroke();
+  });
+
+  net.nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.fillStyle = n.value > 0 ? 'rgba(250,149,133,.85)' : 'rgba(250,149,133,.22)';
+    ctx.strokeStyle = n.value > 0 ? '#ee2e17' : 'rgba(238,46,23,.35)';
+    ctx.lineWidth = 1.2;
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(26,23,21,.82)';
+    ctx.font = '500 10px "IBM Plex Mono",monospace';
+    const right = Math.cos(n.a) >= 0;
+    ctx.textAlign = right ? 'left' : 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.label, n.x + (right ? n.r + 7 : -(n.r + 7)), n.y);
+  });
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ee2e17';
+  ctx.font = '600 11px "IBM Plex Mono",monospace';
+  ctx.fillText(`${net.edges.length} PAIRS`, cx, cy - 8);
+  ctx.fillStyle = 'rgba(26,23,21,.55)';
+  ctx.font = '400 9px "IBM Plex Mono",monospace';
+  ctx.fillText('CHOSEN TOGETHER', cx, cy + 8);
+}
+
+netCanvas.addEventListener('mousemove', ev => {
+  const r = netCanvas.getBoundingClientRect();
+  const hit = net.nodes.find(nd => {
+    const dx = ev.clientX - r.left - nd.x, dy = ev.clientY - r.top - nd.y;
+    return Math.sqrt(dx * dx + dy * dy) <= nd.r + 3;
+  });
+  if(!hit){ tip.style.display = 'none'; netCanvas.style.cursor = 'default'; return; }
+  netCanvas.style.cursor = 'crosshair';
+  tip.style.display = 'block';
+  tip.style.left = (ev.clientX + 14) + 'px';
+  tip.style.top  = (ev.clientY + 14) + 'px';
+  tip.innerHTML = `${hit.label}<br><b>${hit.value}</b> placements`;
+});
+netCanvas.addEventListener('mouseleave', () => tip.style.display = 'none');
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+const views = {
+  Catalog: document.getElementById('catalogView'),
+  Dash:    document.getElementById('dashView'),
+  Net:     document.getElementById('netView'),
+  Sugg:    document.getElementById('notesView'),
+};
+const subsView = document.getElementById('subsView');
+
+function setTab(name){
+  Object.keys(views).forEach(t => {
+    document.getElementById('tab' + t).classList.toggle('active', t === name);
+    views[t].style.display = 'none';
+  });
+  subsView.style.display = 'none';
+  views[name].style.display = name === 'Catalog' || name === 'Dash' ? '' : 'block';
+}
+function showCatalog(){ setTab('Catalog'); }
+function showDash(){ setTab('Dash'); buildDash(); }
+function showNet(){ setTab('Net'); buildNet(); resizeCv(); drawNet(); }
+function showNotes(){
+  setTab('Sugg');
+  if(subsView.dataset.has) subsView.style.display = 'block';
+  fetchSheet2();
+}
+document.getElementById('tabCatalog').addEventListener('click', showCatalog);
+document.getElementById('tabDash').addEventListener('click', showDash);
+document.getElementById('tabNet').addEventListener('click', showNet);
+document.getElementById('tabSugg').addEventListener('click', showNotes);
+
+/* ═══════════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════════ */
+function exportCSV(){
+  const mkToThai = new Map();
+  Object.entries(THAI_TO_MK).forEach(([k, mk]) => mkToThai.set(mk, k));
+  const rows = [['id','category_id','category','model','placements']];
+  CATALOG.forEach(cat => cat.items.forEach(item => {
+    const mk = `${cat.id}/${item.name}`;
+    rows.push([mk, cat.id, cat.name, item.name, String(modelCounts.get(mk) || 0)]);
+  }));
+  const esc = s => `"${String(s).replaceAll('"', '""')}"`;
+  const csv = rows.map(r => r.map(esc).join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' })),
+    download: 'pravet_park_placements.csv'
+  });
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ═══════════════════════════════════════════════
+   TICKER
+═══════════════════════════════════════════════ */
+function buildTicker(){
+  const total = [...modelCounts.values()].reduce((s, v) => s + v, 0);
+  const chosen = [...modelCounts.values()].filter(v => v > 0).length;
+  const top = CATALOG.reduce((a, b) => (catCounts.get(a.id) || 0) >= (catCounts.get(b.id) || 0) ? a : b);
+  const items = [
+    `Source <b>${isLiveData ? 'live response sheet' : 'saved snapshot'}</b>`,
+    `Submissions <b>${PARTICIPANTS}</b>`,
+    `Placements <b>${total}</b>`,
+    `Models chosen <b>${chosen} / ${TOTAL_MODELS}</b>`,
+    `Leading category <b>${top.id} ${top.name}</b>`,
+    `Format <b>GLB · drag to rotate</b>`,
+    `Site <b>Pravet Park, Bangkok</b>`,
+  ];
+  const html = items.map(t => `<span class="tk">${t}</span>`).join('');
+  document.getElementById('ticker').innerHTML = html + html;
+}
+
+/* ═══════════════════════════════════════════════
+   REFRESH
+═══════════════════════════════════════════════ */
+function refreshAll(q = ''){
+  const total = [...modelCounts.values()].reduce((s, v) => s + v, 0);
+  const uniqueSel = [...modelCounts.values()].filter(v => v > 0).length;
+  const activeCats = CATALOG.filter(c => (catCounts.get(c.id) || 0) > 0).length;
+
+  document.getElementById('kSubs').textContent = PARTICIPANTS;
+  document.getElementById('kPlace').textContent = total;
+  document.getElementById('kModels').innerHTML = `${uniqueSel}<small>/${TOTAL_MODELS}</small>`;
+  document.getElementById('kCats').innerHTML = `${activeCats}<small>/${CATALOG.length}</small>`;
+  document.getElementById('railSub').textContent =
+    `Model_Pravet · ${PARTICIPANTS} ${isLiveData ? 'submissions' : 'snapshot rows'}`;
+
+  buildIndex(q);
+  buildCatalog(q);
+  buildTicker();
+  spyTick();
+  if(views.Dash.style.display !== 'none') buildDash();
+  if(views.Net.style.display !== 'none'){ buildNet(); resizeCv(); drawNet(); }
+}
+
+document.getElementById('btnCSV').addEventListener('click', exportCSV);
+let searchTimer;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  const v = e.target.value;
+  searchTimer = setTimeout(() => refreshAll(v), 130);
+});
+window.addEventListener('resize', () => {
+  if(views.Net.style.display !== 'none'){ resizeCv(); drawNet(); }
+});
+
+/* highlight the index entry for the plate in view */
+const spyObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const link = document.querySelector(`.idx a[href="#${e.target.id}"]`);
+    if(link) link.classList.toggle('on', e.isIntersecting);
+  });
+}, { rootMargin:'-45% 0px -50% 0px' });
+const spyTick = () => document.querySelectorAll('.plate-sec').forEach(s => spyObs.observe(s));
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+async function loadLive(){
+  const badge = document.getElementById('stateBadge');
+  badge.className = 'state';
+  badge.textContent = 'Loading';
+  const btn = document.getElementById('btnReload');
+  if(btn){ btn.disabled = true; btn.textContent = 'Loading…'; }
+  await fetchSheet1();
+  refreshAll(document.getElementById('search').value || '');
+  spyTick();
+  const c = document.getElementById('subsCount');
+  if(c) c.textContent = SUBMISSIONS.length ? `· ${SUBMISSIONS.length} layouts` : '';
+  if(btn){ btn.disabled = false; btn.textContent = 'Reload data'; }
+}
+document.getElementById('btnReload').addEventListener('click', loadLive);
+
+(async () => {
+  loadEmbeddedJSON(SHEET1_JSON);   // never show an empty page
+  refreshAll('');
+  showCatalog();
+  setStateBadge(false, PARTICIPANTS);
+  spyTick();
+  await loadLive();                // then replace with the live sheet
+})();
+</script>
+</body>
+</html>

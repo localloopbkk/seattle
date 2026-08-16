@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Street Furniture AI Project - Full Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Work+Sans:wght@400;600&display=swap');
+
+        body {
+            margin: 0;
+            background-color: #0f1322; /* สีธีมเดียวกับ Dashboard */
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        /* Container บังคับขนาดตามโจทย์ 1000 x 1350 */
+        #diagram-container {
+            width: 1000px;
+            height: 1350px;
+            background: linear-gradient(180deg, #1a1f35 0%, #0b0d14 100%);
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            position: relative;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #7aa1ff;
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        p.subtitle {
+            color: #a8b0d6;
+            text-align: center;
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        /* จัดแต่ง Mermaid */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            height: 90%;
+            align-items: center;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#2d3753',
+                    primaryTextColor: '#fff',
+                    primaryBorderColor: '#7aa1ff',
+                    lineColor: '#5c6b99',
+                    secondaryColor: '#161b2e',
+                    tertiaryColor: '#111526'
+                },
+                flowchart: { 
+                    curve: 'basis',
+                    useMaxWidth: false,
+                    htmlLabels: true
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <div id="diagram-container">
+        <h1>AI-Driven Street Furniture Pipeline</h1>
+        <p class="subtitle">From Generative AI to Interactive 3D Web Environment</p>
+
+        <div class="mermaid">
+            %%{init: {'theme': 'dark', 'themeVariables': { 'fontSize': '18px', 'fontFamily': 'Kanit'}}}%%
+            graph TD
+                
+                %% --- PHASE 1: GENERATION ---
+                subgraph Phase1_AI [<b>PHASE 1: AI ASSET GENERATION</b>]
+                    direction TB
+                    User([🧑‍💻 Human Designer])
+                    Prompt[📝 Text Prompt / Image Ref]
+                    AI_Engine{{🤖 AI Core<br/>Rodin / CSM / Meshy}}
+                    GLB_Raw(📦 Raw 3D Model .glb)
+                    
+                    User -->|Input Concept| Prompt
+                    Prompt -->|Submit| AI_Engine
+                    AI_Engine -->|Generate| GLB_Raw
+                end
+
+                %% --- PHASE 2: PROCESSING ---
+                subgraph Phase2_Data [<b>PHASE 2: DATA & OPTIMIZATION</b>]
+                    direction TB
+                    Process[⚙️ Optimization & Check]
+                    DB[(🗄️ Model Database / JSON)]
+                    
+                    GLB_Raw --> Process
+                    Process -->|Save Asset| DB
+                end
+
+                %% --- PHASE 3: INTERACTIVE APPS ---
+                subgraph Phase3_Web [<b>PHASE 3: WEB APPLICATIONS</b>]
+                    direction TB
+                    
+                    %% Application 1
+                    subgraph App_Dashboard [🖥️ App 1: Smart Catalog]
+                        style App_Dashboard fill:#1e2538,stroke:#4a5a8a
+                        Loader1[JS Loader / Mock Data]
+                        UI_Gallery[🖼️ Gallery View<br/>(Filter & Search)]
+                        UI_Network[🕸️ Network Graph<br/>(Relationships)]
+                        KPI[📊 KPI Statistics]
+                        
+                        Loader1 --> UI_Gallery
+                        Loader1 --> UI_Network
+                        UI_Gallery -.-> KPI
+                    end
+
+                    %% Application 2
+                    subgraph App_Editor [🎮 App 2: Scene Editor]
+                        style App_Editor fill:#1e2538,stroke:#4a5a8a
+                        Loader2[Three.js Engine]
+                        GridSys[📐 Grid Snapping System]
+                        Env[🌌 Environment<br/>(Cloud BG / Stars)]
+                        Place[🏗️ Placement & Rotation]
+                        
+                        Loader2 --> GridSys
+                        GridSys --> Place
+                        Loader2 --> Env
+                    end
+                end
+
+                %% --- CONNECTIONS ACROSS PHASES ---
+                DB ===>|Fetch Data| Loader1
+                DB ===>|Load Models| Loader2
+
+                %% --- STYLING CLASSES ---
+                classDef human fill:#2a3b55,stroke:#7aa1ff,stroke-width:2px;
+                classDef ai fill:#3d2a55,stroke:#b388ff,stroke-width:2px;
+                classDef data fill:#2a453b,stroke:#4caf50,stroke-width:2px;
+                classDef app fill:#111526,stroke:#a8b0d6,stroke-width:1px,stroke-dasharray: 5 5;
+
+                class User,Prompt human;
+                class AI_Engine ai;
+                class GLB_Raw,DB data;
+        </div>
+        
+        <div style="position: absolute; bottom: 20px; right: 30px; color: #555; font-size: 12px; text-align: right;">
+            System Architecture Diagram<br>
+            Dimensions: 1000 x 1350 px
+        </div>
+    </div>
+
+</body>
+</html>
